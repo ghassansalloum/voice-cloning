@@ -517,12 +517,13 @@ def create_ui():
                 script,  # Update rerecord_script
                 rerecord_name_text,  # Update rerecord_profile_name
                 gr.update(interactive=not is_guest),  # Enable/disable rerecord_btn
+                "",  # Clear rerecord_status
             )
 
         profile_dropdown.change(
             fn=on_profile_change,
             inputs=[profile_dropdown],
-            outputs=[current_profile_id, profile_info, recording_section, profile_mode_info, rerecord_script, rerecord_profile_name, rerecord_btn]
+            outputs=[current_profile_id, profile_info, recording_section, profile_mode_info, rerecord_script, rerecord_profile_name, rerecord_btn, rerecord_status]
         )
 
         def on_save_profile(name, audio, script):
@@ -692,7 +693,7 @@ def create_ui():
         app.load(
             fn=on_profile_change,
             inputs=[profile_dropdown],
-            outputs=[current_profile_id, profile_info, recording_section, profile_mode_info, rerecord_script, rerecord_profile_name, rerecord_btn]
+            outputs=[current_profile_id, profile_info, recording_section, profile_mode_info, rerecord_script, rerecord_profile_name, rerecord_btn, rerecord_status]
         )
 
     return app
