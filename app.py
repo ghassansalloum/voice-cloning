@@ -18,14 +18,57 @@ _model = None
 PROFILES_DIR = Path(__file__).parent / "profiles"
 PROFILES_INDEX = PROFILES_DIR / "profiles.json"
 
-# Reference script - pangram with diverse phonemes for voice capture
-REFERENCE_SCRIPT = """The quick brown fox jumps over the lazy dog.
+# Default reference script - pangram with diverse phonemes for voice capture
+DEFAULT_REFERENCE_SCRIPT = """The quick brown fox jumps over the lazy dog.
 She sells seashells by the seashore.
 Peter Piper picked a peck of pickled peppers.
 How much wood would a woodchuck chuck if a woodchuck could chuck wood?"""
 
 # Guest profile constant
 GUEST_PROFILE_ID = "guest"
+
+
+def _load_profiles_data() -> dict:
+    """Load the raw profiles.json data."""
+    PROFILES_DIR.mkdir(exist_ok=True)
+    if not PROFILES_INDEX.exists():
+        return {"profiles": []}
+    try:
+        with open(PROFILES_INDEX, "r") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, IOError):
+        return {"profiles": []}
+
+
+def _save_profiles_data(data: dict) -> None:
+    """Save the raw profiles.json data."""
+    PROFILES_DIR.mkdir(exist_ok=True)
+    with open(PROFILES_INDEX, "w") as f:
+        json.dump(data, f, indent=2)
+
+
+def get_default_script() -> str:
+    """Get global default script from profiles.json or fallback."""
+    data = _load_profiles_data()
+    return data.get("default_script", DEFAULT_REFERENCE_SCRIPT)
+
+
+def set_default_script(script: str) -> None:
+    """Save global default script to profiles.json."""
+    data = _load_profiles_data()
+    data["default_script"] = script
+    _save_profiles_data(data)
+
+
+def get_profile_script(profile_id: str) -> str:
+    """Get the reference script for a specific profile, or global default."""
+    if profile_id == GUEST_PROFILE_ID:
+        return get_default_script()
+    profiles = load_profiles()
+    profile = next((p for p in profiles if p["id"] == profile_id), None)
+    if profile and "ref_script" in profile:
+        return profile["ref_script"]
+    return get_default_script()
 
 
 def get_model():
@@ -48,25 +91,18 @@ def get_model():
 
 def load_profiles() -> list[dict]:
     """Load all profiles from profiles.json."""
-    PROFILES_DIR.mkdir(exist_ok=True)
-    if not PROFILES_INDEX.exists():
-        return []
-    try:
-        with open(PROFILES_INDEX, "r") as f:
-            data = json.load(f)
-            return data.get("profiles", [])
-    except (json.JSONDecodeError, IOError):
-        return []
+    data = _load_profiles_data()
+    return data.get("profiles", [])
 
 
 def save_profiles_index(profiles: list[dict]) -> None:
-    """Persist profile index to profiles.json."""
-    PROFILES_DIR.mkdir(exist_ok=True)
-    with open(PROFILES_INDEX, "w") as f:
-        json.dump({"profiles": profiles}, f, indent=2)
+    """Persist profile index to profiles.json, preserving other fields."""
+    data = _load_profiles_data()
+    data["profiles"] = profiles
+    _save_profiles_data(data)
 
 
-def create_profile(name: str, audio_data: np.ndarray, sample_rate: int) -> str:
+def create_profile(name: str, audio_data: np.ndarray, sample_rate: int, ref_script: str | None = None) -> str:
     """
     Create a new profile with voice recording.
 
@@ -74,6 +110,7 @@ def create_profile(name: str, audio_data: np.ndarray, sample_rate: int) -> str:
         name: Profile display name
         audio_data: Audio data as numpy array (float32, mono)
         sample_rate: Audio sample rate
+        ref_script: Custom reference script (uses global default if None)
 
     Returns:
         Profile ID of created profile
@@ -81,6 +118,9 @@ def create_profile(name: str, audio_data: np.ndarray, sample_rate: int) -> str:
     profile_id = str(uuid.uuid4())
     profile_dir = PROFILES_DIR / profile_id
     profile_dir.mkdir(parents=True, exist_ok=True)
+
+    # Use provided script or global default
+    script = ref_script if ref_script else get_default_script()
 
     # Save audio file
     audio_path = profile_dir / "audio.wav"
@@ -90,7 +130,7 @@ def create_profile(name: str, audio_data: np.ndarray, sample_rate: int) -> str:
     model = get_model()
     voice_clone_prompt = model.create_voice_clone_prompt(
         ref_audio=str(audio_path),
-        ref_text=REFERENCE_SCRIPT,
+        ref_text=script,
     )
     prompt_path = profile_dir / "prompt.pt"
     torch.save(voice_clone_prompt, str(prompt_path))
@@ -100,7 +140,8 @@ def create_profile(name: str, audio_data: np.ndarray, sample_rate: int) -> str:
     profiles.append({
         "id": profile_id,
         "name": name,
-        "created_at": datetime.utcnow().isoformat() + "Z"
+        "created_at": datetime.utcnow().isoformat() + "Z",
+        "ref_script": script
     })
     save_profiles_index(profiles)
 
@@ -154,6 +195,49 @@ def get_voice_prompt(profile_id: str):
     return None
 
 
+def update_profile_voice(profile_id: str, audio_data: np.ndarray, sample_rate: int, ref_script: str) -> bool:
+    """
+    Re-record a profile with new audio and script.
+
+    Args:
+        profile_id: ID of profile to update
+        audio_data: New audio data as numpy array (float32, mono)
+        sample_rate: Audio sample rate
+        ref_script: Reference script used for recording
+
+    Returns:
+        True if updated successfully, False if profile not found
+    """
+    if profile_id == GUEST_PROFILE_ID:
+        return False
+
+    profiles = load_profiles()
+    profile_idx = next((i for i, p in enumerate(profiles) if p["id"] == profile_id), None)
+    if profile_idx is None:
+        return False
+
+    profile_dir = PROFILES_DIR / profile_id
+
+    # Save new audio file
+    audio_path = profile_dir / "audio.wav"
+    sf.write(str(audio_path), audio_data, sample_rate)
+
+    # Recompute and cache voice clone prompt
+    model = get_model()
+    voice_clone_prompt = model.create_voice_clone_prompt(
+        ref_audio=str(audio_path),
+        ref_text=ref_script,
+    )
+    prompt_path = profile_dir / "prompt.pt"
+    torch.save(voice_clone_prompt, str(prompt_path))
+
+    # Update profile metadata
+    profiles[profile_idx]["ref_script"] = ref_script
+    save_profiles_index(profiles)
+
+    return True
+
+
 def get_profile_choices() -> list[tuple[str, str]]:
     """Get list of (display_name, profile_id) tuples for dropdown."""
     choices = [("Guest (record new voice)", GUEST_PROFILE_ID)]
@@ -182,13 +266,14 @@ def normalize_audio(audio_data: np.ndarray) -> np.ndarray:
 # Voice Generation Functions
 # ============================================================================
 
-def clone_voice_guest(reference_audio, target_text: str) -> str:
+def clone_voice_guest(reference_audio, target_text: str, ref_script: str | None = None) -> str:
     """
     Clone voice from reference audio (Guest mode).
 
     Args:
         reference_audio: Tuple of (sample_rate, audio_data) from Gradio microphone
         target_text: Text to synthesize in the cloned voice
+        ref_script: Custom reference script (uses global default if None)
 
     Returns:
         Path to generated WAV file
@@ -198,6 +283,9 @@ def clone_voice_guest(reference_audio, target_text: str) -> str:
 
     if not target_text or not target_text.strip():
         raise gr.Error("Please enter some text to generate speech.")
+
+    # Use provided script or global default
+    script = ref_script if ref_script else get_default_script()
 
     sample_rate, audio_data = reference_audio
     audio_data = normalize_audio(audio_data)
@@ -213,7 +301,7 @@ def clone_voice_guest(reference_audio, target_text: str) -> str:
     # Create voice clone prompt from reference audio
     voice_clone_prompt = model.create_voice_clone_prompt(
         ref_audio=ref_audio_path,
-        ref_text=REFERENCE_SCRIPT,
+        ref_text=script,
     )
 
     # Generate speech with cloned voice
@@ -289,6 +377,19 @@ def create_ui():
                     interactive=True,
                 )
 
+                # Settings Section
+                with gr.Accordion("Settings", open=False):
+                    gr.Markdown("**Global Default Script**")
+                    gr.Markdown("*This script is used for Guest mode and new profiles.*")
+                    settings_script = gr.Textbox(
+                        value=get_default_script(),
+                        label="Default Reference Script",
+                        lines=4,
+                        interactive=True
+                    )
+                    save_settings_btn = gr.Button("Save Settings", variant="primary")
+                    settings_status = gr.Markdown("")
+
                 # New Profile Section
                 with gr.Accordion("Create New Profile", open=False) as new_profile_accordion:
                     new_profile_name = gr.Textbox(
@@ -297,11 +398,11 @@ def create_ui():
                     )
 
                     gr.Markdown("**Record your voice reading the script:**")
-                    gr.Textbox(
-                        value=REFERENCE_SCRIPT,
-                        label="Reference Script",
+                    new_profile_script = gr.Textbox(
+                        value=get_default_script(),
+                        label="Reference Script (editable)",
                         lines=4,
-                        interactive=False
+                        interactive=True
                     )
 
                     new_profile_audio = gr.Audio(
@@ -312,6 +413,25 @@ def create_ui():
 
                     save_profile_btn = gr.Button("Save Profile", variant="primary")
                     profile_status = gr.Markdown("")
+
+                # Re-record Profile Section
+                with gr.Accordion("Re-record Profile", open=False) as rerecord_accordion:
+                    gr.Markdown("*Update the selected profile's voice.*")
+                    rerecord_script = gr.Textbox(
+                        value=get_default_script(),
+                        label="Reference Script (editable)",
+                        lines=4,
+                        interactive=True
+                    )
+
+                    rerecord_audio = gr.Audio(
+                        sources=["microphone"],
+                        type="numpy",
+                        label="Record New Voice"
+                    )
+
+                    rerecord_btn = gr.Button("Update Voice", variant="primary")
+                    rerecord_status = gr.Markdown("")
 
                 gr.Markdown("---")
 
@@ -334,11 +454,11 @@ def create_ui():
                 # Recording section (only for Guest mode)
                 with gr.Column(visible=True) as recording_section:
                     gr.Markdown("### Step 1: Read This Script Aloud")
-                    gr.Textbox(
-                        value=REFERENCE_SCRIPT,
-                        label="Reference Script (read this text clearly when recording)",
+                    guest_script = gr.Textbox(
+                        value=get_default_script(),
+                        label="Reference Script (editable - read this text clearly when recording)",
                         lines=4,
-                        interactive=False
+                        interactive=True
                     )
 
                     gr.Markdown("### Step 2: Record Your Voice")
@@ -386,26 +506,29 @@ def create_ui():
 
             if is_guest:
                 profile_text = "**Current Profile:** Guest (record new voice)"
+                script = get_default_script()
             else:
                 profiles = load_profiles()
                 profile = next((p for p in profiles if p["id"] == profile_id), None)
                 name = profile["name"] if profile else "Unknown"
                 profile_text = f"**Current Profile:** {name}"
+                script = get_profile_script(profile_id)
 
             return (
                 profile_id,  # Update state
                 profile_text,  # Update profile info
                 gr.update(visible=is_guest),  # recording_section
                 gr.update(visible=not is_guest),  # profile_mode_info
+                script,  # Update rerecord_script
             )
 
         profile_dropdown.change(
             fn=on_profile_change,
             inputs=[profile_dropdown],
-            outputs=[current_profile_id, profile_info, recording_section, profile_mode_info]
+            outputs=[current_profile_id, profile_info, recording_section, profile_mode_info, rerecord_script]
         )
 
-        def on_save_profile(name, audio):
+        def on_save_profile(name, audio, script):
             """Handle new profile creation."""
             if not name or not name.strip():
                 return (
@@ -419,10 +542,16 @@ def create_ui():
                     gr.update(),
                 )
 
+            if not script or not script.strip():
+                return (
+                    "*Please enter a reference script.*",
+                    gr.update(),
+                )
+
             try:
                 sample_rate, audio_data = audio
                 audio_data = normalize_audio(audio_data)
-                profile_id = create_profile(name.strip(), audio_data, sample_rate)
+                profile_id = create_profile(name.strip(), audio_data, sample_rate, script.strip())
 
                 # Update dropdown choices
                 new_choices = get_profile_choices()
@@ -439,7 +568,7 @@ def create_ui():
 
         save_profile_btn.click(
             fn=on_save_profile,
-            inputs=[new_profile_name, new_profile_audio],
+            inputs=[new_profile_name, new_profile_audio, new_profile_script],
             outputs=[profile_status, profile_dropdown]
         )
 
@@ -476,11 +605,60 @@ def create_ui():
             outputs=[delete_status, profile_dropdown, current_profile_id]
         )
 
-        def on_generate(profile_id, audio, text):
+        def on_save_settings(script):
+            """Handle saving global default script."""
+            if not script or not script.strip():
+                return "*Please enter a reference script.*"
+
+            try:
+                set_default_script(script.strip())
+                return "*Settings saved successfully!*"
+            except Exception as e:
+                return f"*Error saving settings: {str(e)}*"
+
+        save_settings_btn.click(
+            fn=on_save_settings,
+            inputs=[settings_script],
+            outputs=[settings_status]
+        )
+
+        def on_rerecord(profile_id, audio, script):
+            """Handle re-recording a profile's voice."""
+            if profile_id == GUEST_PROFILE_ID:
+                return "*Cannot re-record Guest profile. Create a new profile instead.*"
+
+            if audio is None:
+                return "*Please record your voice first.*"
+
+            if not script or not script.strip():
+                return "*Please enter a reference script.*"
+
+            try:
+                sample_rate, audio_data = audio
+                audio_data = normalize_audio(audio_data)
+                success = update_profile_voice(profile_id, audio_data, sample_rate, script.strip())
+
+                if success:
+                    profiles = load_profiles()
+                    profile = next((p for p in profiles if p["id"] == profile_id), None)
+                    name = profile["name"] if profile else "Unknown"
+                    return f"*Voice updated for '{name}'!*"
+                else:
+                    return "*Profile not found.*"
+            except Exception as e:
+                return f"*Error updating voice: {str(e)}*"
+
+        rerecord_btn.click(
+            fn=on_rerecord,
+            inputs=[current_profile_id, rerecord_audio, rerecord_script],
+            outputs=[rerecord_status]
+        )
+
+        def on_generate(profile_id, audio, text, guest_ref_script):
             """Handle voice generation."""
             try:
                 if profile_id == GUEST_PROFILE_ID:
-                    result = clone_voice_guest(audio, text)
+                    result = clone_voice_guest(audio, text, guest_ref_script)
                 else:
                     result = generate_from_profile(profile_id, text)
                 return result, "*Status: Generation complete!*"
@@ -491,7 +669,7 @@ def create_ui():
 
         generate_btn.click(
             fn=on_generate,
-            inputs=[current_profile_id, audio_input, text_input],
+            inputs=[current_profile_id, audio_input, text_input, guest_script],
             outputs=[audio_output, status]
         )
 
@@ -499,7 +677,7 @@ def create_ui():
         app.load(
             fn=on_profile_change,
             inputs=[profile_dropdown],
-            outputs=[current_profile_id, profile_info, recording_section, profile_mode_info]
+            outputs=[current_profile_id, profile_info, recording_section, profile_mode_info, rerecord_script]
         )
 
     return app
