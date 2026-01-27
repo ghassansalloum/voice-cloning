@@ -269,10 +269,8 @@ def clone_voice_guest(reference_audio, target_text: str, ref_script: str | None 
     sample_rate, audio_data = reference_audio
     audio_data = normalize_audio(audio_data)
 
-    # Save reference audio to temp file
-    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as ref_file:
-        sf.write(ref_file.name, audio_data, sample_rate)
-        ref_audio_path = ref_file.name
+    # Convert to mlx array for ref_audio parameter
+    ref_audio_mx = mx.array(audio_data.astype(np.float32))
 
     # Load model and generate
     model = get_model()
@@ -280,7 +278,7 @@ def clone_voice_guest(reference_audio, target_text: str, ref_script: str | None 
     # Generate speech with cloned voice using mlx-audio
     results = list(model.generate(
         text=target_text.strip(),
-        ref_audio=ref_audio_path,
+        ref_audio=ref_audio_mx,
         ref_text=script,
     ))
 
@@ -312,12 +310,17 @@ def generate_from_profile(profile_id: str, target_text: str) -> str:
         raise gr.Error("Profile voice data not found. Please recreate the profile.")
 
     ref_audio_path, ref_script = voice_data
+
+    # Load reference audio and convert to mlx array
+    audio_data, _ = sf.read(ref_audio_path)
+    ref_audio_mx = mx.array(audio_data.astype(np.float32))
+
     model = get_model()
 
     # Generate speech with profile's reference audio
     results = list(model.generate(
         text=target_text.strip(),
-        ref_audio=ref_audio_path,
+        ref_audio=ref_audio_mx,
         ref_text=ref_script,
     ))
 
