@@ -416,7 +416,7 @@ def create_ui():
 
                 # Re-record Profile Section
                 with gr.Accordion("Re-record Profile", open=False) as rerecord_accordion:
-                    gr.Markdown("*Update the selected profile's voice.*")
+                    rerecord_profile_name = gr.Markdown("*Select a saved profile to re-record*")
                     rerecord_script = gr.Textbox(
                         value=get_default_script(),
                         label="Reference Script (editable)",
@@ -430,7 +430,7 @@ def create_ui():
                         label="Record New Voice"
                     )
 
-                    rerecord_btn = gr.Button("Update Voice", variant="primary")
+                    rerecord_btn = gr.Button("Update Voice", variant="primary", interactive=False)
                     rerecord_status = gr.Markdown("")
 
                 gr.Markdown("---")
@@ -507,12 +507,14 @@ def create_ui():
             if is_guest:
                 profile_text = "**Current Profile:** Guest (record new voice)"
                 script = get_default_script()
+                rerecord_name_text = "*Select a saved profile to re-record*"
             else:
                 profiles = load_profiles()
                 profile = next((p for p in profiles if p["id"] == profile_id), None)
                 name = profile["name"] if profile else "Unknown"
                 profile_text = f"**Current Profile:** {name}"
                 script = get_profile_script(profile_id)
+                rerecord_name_text = f"**Re-recording:** {name}"
 
             return (
                 profile_id,  # Update state
@@ -520,12 +522,14 @@ def create_ui():
                 gr.update(visible=is_guest),  # recording_section
                 gr.update(visible=not is_guest),  # profile_mode_info
                 script,  # Update rerecord_script
+                rerecord_name_text,  # Update rerecord_profile_name
+                gr.update(interactive=not is_guest),  # Enable/disable rerecord_btn
             )
 
         profile_dropdown.change(
             fn=on_profile_change,
             inputs=[profile_dropdown],
-            outputs=[current_profile_id, profile_info, recording_section, profile_mode_info, rerecord_script]
+            outputs=[current_profile_id, profile_info, recording_section, profile_mode_info, rerecord_script, rerecord_profile_name, rerecord_btn]
         )
 
         def on_save_profile(name, audio, script):
@@ -608,30 +612,39 @@ def create_ui():
         def on_save_settings(script):
             """Handle saving global default script."""
             if not script or not script.strip():
-                return "*Please enter a reference script.*"
+                return "*Please enter a reference script.*", gr.update(), gr.update()
 
             try:
                 set_default_script(script.strip())
-                return "*Settings saved successfully!*"
+                return "*Settings saved successfully!*", script.strip(), script.strip()
             except Exception as e:
-                return f"*Error saving settings: {str(e)}*"
+                return f"*Error saving settings: {str(e)}*", gr.update(), gr.update()
 
         save_settings_btn.click(
             fn=on_save_settings,
             inputs=[settings_script],
-            outputs=[settings_status]
+            outputs=[settings_status, new_profile_script, guest_script]
         )
 
         def on_rerecord(profile_id, audio, script):
             """Handle re-recording a profile's voice."""
             if profile_id == GUEST_PROFILE_ID:
-                return "*Cannot re-record Guest profile. Create a new profile instead.*"
+                return (
+                    "*Cannot re-record Guest profile. Create a new profile instead.*",
+                    gr.update(),  # Keep audio as-is
+                )
 
             if audio is None:
-                return "*Please record your voice first.*"
+                return (
+                    "*Please record your voice first.*",
+                    gr.update(),  # Keep audio as-is
+                )
 
             if not script or not script.strip():
-                return "*Please enter a reference script.*"
+                return (
+                    "*Please enter a reference script.*",
+                    gr.update(),  # Keep audio as-is
+                )
 
             try:
                 sample_rate, audio_data = audio
@@ -642,16 +655,25 @@ def create_ui():
                     profiles = load_profiles()
                     profile = next((p for p in profiles if p["id"] == profile_id), None)
                     name = profile["name"] if profile else "Unknown"
-                    return f"*Voice updated for '{name}'!*"
+                    return (
+                        f"*Voice updated for '{name}'! The profile now uses your new recording.*",
+                        gr.update(value=None),  # Clear the audio recorder
+                    )
                 else:
-                    return "*Profile not found.*"
+                    return (
+                        "*Profile not found.*",
+                        gr.update(),  # Keep audio as-is
+                    )
             except Exception as e:
-                return f"*Error updating voice: {str(e)}*"
+                return (
+                    f"*Error updating voice: {str(e)}*",
+                    gr.update(),  # Keep audio as-is
+                )
 
         rerecord_btn.click(
             fn=on_rerecord,
             inputs=[current_profile_id, rerecord_audio, rerecord_script],
-            outputs=[rerecord_status]
+            outputs=[rerecord_status, rerecord_audio]
         )
 
         def on_generate(profile_id, audio, text, guest_ref_script):
@@ -677,7 +699,7 @@ def create_ui():
         app.load(
             fn=on_profile_change,
             inputs=[profile_dropdown],
-            outputs=[current_profile_id, profile_info, recording_section, profile_mode_info, rerecord_script]
+            outputs=[current_profile_id, profile_info, recording_section, profile_mode_info, rerecord_script, rerecord_profile_name, rerecord_btn]
         )
 
     return app
