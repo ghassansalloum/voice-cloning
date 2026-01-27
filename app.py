@@ -439,7 +439,7 @@ def create_ui():
             # ================================================================
             with gr.Column(scale=3):
                 gr.Markdown("# Voice Cloning with Qwen3-TTS")
-                gr.Markdown("Clone your voice locally on Apple Silicon using PyTorch MPS.")
+                gr.Markdown("Clone your voice locally on Apple Silicon using MLX.")
 
                 # Show current profile info
                 profile_info = gr.Markdown("**Current Profile:** Guest (record new voice)")
