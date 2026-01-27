@@ -7,6 +7,7 @@ from datetime import datetime
 from pathlib import Path
 
 import gradio as gr
+import librosa
 import mlx.core as mx
 import numpy as np
 import soundfile as sf
@@ -269,6 +270,10 @@ def clone_voice_guest(reference_audio, target_text: str, ref_script: str | None 
     sample_rate, audio_data = reference_audio
     audio_data = normalize_audio(audio_data)
 
+    # Resample to model's expected sample rate (24000 Hz) if needed
+    if sample_rate != SAMPLE_RATE:
+        audio_data = librosa.resample(audio_data, orig_sr=sample_rate, target_sr=SAMPLE_RATE)
+
     # Convert to mlx array for ref_audio parameter
     ref_audio_mx = mx.array(audio_data.astype(np.float32))
 
@@ -312,7 +317,12 @@ def generate_from_profile(profile_id: str, target_text: str) -> str:
     ref_audio_path, ref_script = voice_data
 
     # Load reference audio and convert to mlx array
-    audio_data, _ = sf.read(ref_audio_path)
+    audio_data, file_sample_rate = sf.read(ref_audio_path)
+
+    # Resample to model's expected sample rate (24000 Hz) if needed
+    if file_sample_rate != SAMPLE_RATE:
+        audio_data = librosa.resample(audio_data, orig_sr=file_sample_rate, target_sr=SAMPLE_RATE)
+
     ref_audio_mx = mx.array(audio_data.astype(np.float32))
 
     model = get_model()
