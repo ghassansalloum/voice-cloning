@@ -14,7 +14,16 @@ import soundfile as sf
 
 # Global model cache for lazy loading
 _model = None
+_current_model_id = None
 SAMPLE_RATE = 24000  # Qwen3-TTS output sample rate
+
+# Available models (id, display_name, description)
+AVAILABLE_MODELS = [
+    ("mlx-community/Qwen3-TTS-12Hz-0.6B-Base-4bit", "0.6B 4-bit (Fast)", "Fastest, lower memory, slight quality tradeoff"),
+    ("mlx-community/Qwen3-TTS-12Hz-0.6B-Base-bf16", "0.6B bf16 (Balanced)", "Good balance of speed and quality"),
+    ("mlx-community/Qwen3-TTS-12Hz-1.7B-Base-4bit", "1.7B 4-bit (Quality)", "Better quality, moderate speed"),
+]
+DEFAULT_MODEL_ID = "mlx-community/Qwen3-TTS-12Hz-0.6B-Base-4bit"
 
 # Profiles directory
 PROFILES_DIR = Path(__file__).parent / "profiles"
@@ -73,13 +82,34 @@ def get_profile_script(profile_id: str) -> str:
     return get_default_script()
 
 
+def get_selected_model_id() -> str:
+    """Get the currently selected model ID from settings."""
+    data = _load_profiles_data()
+    return data.get("selected_model", DEFAULT_MODEL_ID)
+
+
+def set_selected_model_id(model_id: str) -> None:
+    """Save the selected model ID to settings."""
+    data = _load_profiles_data()
+    data["selected_model"] = model_id
+    _save_profiles_data(data)
+
+
 def get_model():
-    """Lazy load the TTS model to avoid slow startup."""
-    global _model
-    if _model is None:
+    """Lazy load the TTS model, reloading if model selection changed."""
+    global _model, _current_model_id
+    selected_model_id = get_selected_model_id()
+
+    if _model is None or _current_model_id != selected_model_id:
         from mlx_audio.tts.utils import load_model
-        _model = load_model("mlx-community/Qwen3-TTS-12Hz-0.6B-Base-bf16")
+        _model = load_model(selected_model_id)
+        _current_model_id = selected_model_id
     return _model
+
+
+def get_model_choices() -> list[tuple[str, str]]:
+    """Get list of (display_name, model_id) tuples for dropdown."""
+    return [(f"{name} - {desc}", model_id) for model_id, name, desc in AVAILABLE_MODELS]
 
 
 # ============================================================================
@@ -372,6 +402,16 @@ def create_ui():
 
                 # Settings Section
                 with gr.Accordion("Settings", open=False):
+                    gr.Markdown("**Model Selection**")
+                    model_dropdown = gr.Dropdown(
+                        choices=get_model_choices(),
+                        value=get_selected_model_id(),
+                        label="TTS Model",
+                        interactive=True,
+                    )
+                    model_status = gr.Markdown("")
+
+                    gr.Markdown("---")
                     gr.Markdown("**Global Default Script**")
                     gr.Markdown("*This script is used for Guest mode and new profiles.*")
                     settings_script = gr.Textbox(
@@ -601,6 +641,22 @@ def create_ui():
             fn=on_delete_profile,
             inputs=[current_profile_id],
             outputs=[delete_status, profile_dropdown, current_profile_id]
+        )
+
+        def on_model_change(model_id):
+            """Handle model selection change."""
+            try:
+                set_selected_model_id(model_id)
+                # Find the model name for display
+                model_name = next((name for mid, name, _ in AVAILABLE_MODELS if mid == model_id), "Unknown")
+                return f"*Model changed to {model_name}. Will load on next generation.*"
+            except Exception as e:
+                return f"*Error changing model: {str(e)}*"
+
+        model_dropdown.change(
+            fn=on_model_change,
+            inputs=[model_dropdown],
+            outputs=[model_status]
         )
 
         def on_save_settings(script):
