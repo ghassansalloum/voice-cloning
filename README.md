@@ -19,6 +19,21 @@ A local voice cloning application using Qwen3-TTS via MLX-Audio with a Gradio we
 
 ## Setup
 
+### Quick Setup (Recommended)
+
+Run the installation script:
+```bash
+./install.sh
+```
+
+This will automatically:
+- Verify system requirements (macOS, Apple Silicon, Python 3.10+)
+- Create and configure the virtual environment
+- Install all dependencies
+- Verify the installation
+
+### Manual Setup
+
 1. Create and activate a virtual environment:
 ```bash
 python3 -m venv venv
