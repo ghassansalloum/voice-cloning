@@ -12,8 +12,9 @@ A local voice cloning application using Qwen3-TTS via MLX-Audio with a Gradio we
 
 ## Requirements
 
-- macOS with Apple Silicon (M1/M2/M3)
+- macOS with Apple Silicon (M1/M2/M3/M4)
 - Python 3.10+
+- Xcode Command Line Tools (`xcode-select --install`)
 - 16GB RAM (for the 0.6B model)
 
 ## Setup

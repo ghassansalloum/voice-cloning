@@ -7,12 +7,13 @@ from datetime import datetime
 from pathlib import Path
 
 import gradio as gr
+import mlx.core as mx
 import numpy as np
 import soundfile as sf
-import torch
 
 # Global model cache for lazy loading
 _model = None
+SAMPLE_RATE = 24000  # Qwen3-TTS output sample rate
 
 # Profiles directory
 PROFILES_DIR = Path(__file__).parent / "profiles"
@@ -75,13 +76,8 @@ def get_model():
     """Lazy load the TTS model to avoid slow startup."""
     global _model
     if _model is None:
-        from qwen_tts import Qwen3TTSModel
-        # Must use float32 for voice cloning on MPS
-        _model = Qwen3TTSModel.from_pretrained(
-            "Qwen/Qwen3-TTS-12Hz-0.6B-Base",
-            device_map="mps",
-            dtype=torch.float32,
-        )
+        from mlx_audio.tts.utils import load_model
+        _model = load_model("mlx-community/Qwen3-TTS-12Hz-0.6B-Base-bf16")
     return _model
 
 
@@ -125,15 +121,6 @@ def create_profile(name: str, audio_data: np.ndarray, sample_rate: int, ref_scri
     # Save audio file
     audio_path = profile_dir / "audio.wav"
     sf.write(str(audio_path), audio_data, sample_rate)
-
-    # Compute and cache voice clone prompt
-    model = get_model()
-    voice_clone_prompt = model.create_voice_clone_prompt(
-        ref_audio=str(audio_path),
-        ref_text=script,
-    )
-    prompt_path = profile_dir / "prompt.pt"
-    torch.save(voice_clone_prompt, str(prompt_path))
 
     # Update profiles index
     profiles = load_profiles()
@@ -179,20 +166,21 @@ def delete_profile(profile_id: str) -> bool:
     return True
 
 
-def get_voice_prompt(profile_id: str):
+def get_voice_data(profile_id: str) -> tuple[str, str] | None:
     """
-    Load cached voice_clone_prompt for a profile.
+    Get audio path and ref_script for a profile.
 
     Args:
         profile_id: Profile ID
 
     Returns:
-        Cached voice_clone_prompt tensor, or None if not found
+        Tuple of (audio_path, ref_script), or None if not found
     """
-    prompt_path = PROFILES_DIR / profile_id / "prompt.pt"
-    if prompt_path.exists():
-        return torch.load(str(prompt_path), weights_only=False)
-    return None
+    audio_path = PROFILES_DIR / profile_id / "audio.wav"
+    if not audio_path.exists():
+        return None
+    ref_script = get_profile_script(profile_id)
+    return str(audio_path), ref_script
 
 
 def update_profile_voice(profile_id: str, audio_data: np.ndarray, sample_rate: int, ref_script: str) -> bool:
@@ -221,15 +209,6 @@ def update_profile_voice(profile_id: str, audio_data: np.ndarray, sample_rate: i
     # Save new audio file
     audio_path = profile_dir / "audio.wav"
     sf.write(str(audio_path), audio_data, sample_rate)
-
-    # Recompute and cache voice clone prompt
-    model = get_model()
-    voice_clone_prompt = model.create_voice_clone_prompt(
-        ref_audio=str(audio_path),
-        ref_text=ref_script,
-    )
-    prompt_path = profile_dir / "prompt.pt"
-    torch.save(voice_clone_prompt, str(prompt_path))
 
     # Update profile metadata
     profiles[profile_idx]["ref_script"] = ref_script
@@ -298,28 +277,25 @@ def clone_voice_guest(reference_audio, target_text: str, ref_script: str | None 
     # Load model and generate
     model = get_model()
 
-    # Create voice clone prompt from reference audio
-    voice_clone_prompt = model.create_voice_clone_prompt(
+    # Generate speech with cloned voice using mlx-audio
+    results = list(model.generate(
+        text=target_text.strip(),
         ref_audio=ref_audio_path,
         ref_text=script,
-    )
+    ))
 
-    # Generate speech with cloned voice
-    wavs, sr = model.generate_voice_clone(
-        text=target_text.strip(),
-        language="English",
-        voice_clone_prompt=voice_clone_prompt,
-    )
+    # Convert mlx array to numpy and save
+    audio_data = np.array(results[0].audio)
 
     # Save to temporary WAV file
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as out_file:
-        sf.write(out_file.name, wavs[0], sr)
+        sf.write(out_file.name, audio_data, SAMPLE_RATE)
         return out_file.name
 
 
 def generate_from_profile(profile_id: str, target_text: str) -> str:
     """
-    Generate speech using a saved profile's cached voice prompt.
+    Generate speech using a saved profile's voice.
 
     Args:
         profile_id: Profile ID to use
@@ -331,22 +307,26 @@ def generate_from_profile(profile_id: str, target_text: str) -> str:
     if not target_text or not target_text.strip():
         raise gr.Error("Please enter some text to generate speech.")
 
-    voice_clone_prompt = get_voice_prompt(profile_id)
-    if voice_clone_prompt is None:
-        raise gr.Error(f"Profile voice data not found. Please recreate the profile.")
+    voice_data = get_voice_data(profile_id)
+    if voice_data is None:
+        raise gr.Error("Profile voice data not found. Please recreate the profile.")
 
+    ref_audio_path, ref_script = voice_data
     model = get_model()
 
-    # Generate speech with cached voice prompt
-    wavs, sr = model.generate_voice_clone(
+    # Generate speech with profile's reference audio
+    results = list(model.generate(
         text=target_text.strip(),
-        language="English",
-        voice_clone_prompt=voice_clone_prompt,
-    )
+        ref_audio=ref_audio_path,
+        ref_text=ref_script,
+    ))
+
+    # Convert mlx array to numpy and save
+    audio_data = np.array(results[0].audio)
 
     # Save to temporary WAV file
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as out_file:
-        sf.write(out_file.name, wavs[0], sr)
+        sf.write(out_file.name, audio_data, SAMPLE_RATE)
         return out_file.name
 
 
