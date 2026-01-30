@@ -112,6 +112,32 @@ def get_model_choices() -> list[tuple[str, str]]:
     return [(f"{name} - {desc}", model_id) for model_id, name, desc in AVAILABLE_MODELS]
 
 
+# Available languages for TTS
+AVAILABLE_LANGUAGES = [
+    ("english", "English"),
+    ("french", "French"),
+]
+DEFAULT_LANGUAGE = "english"
+
+
+def get_selected_language() -> str:
+    """Get the currently selected language from settings."""
+    data = _load_profiles_data()
+    return data.get("selected_language", DEFAULT_LANGUAGE)
+
+
+def set_selected_language(language: str) -> None:
+    """Save the selected language to settings."""
+    data = _load_profiles_data()
+    data["selected_language"] = language
+    _save_profiles_data(data)
+
+
+def get_language_choices() -> list[tuple[str, str]]:
+    """Get list of (display_name, lang_code) tuples for dropdown."""
+    return [(display, code) for code, display in AVAILABLE_LANGUAGES]
+
+
 # ============================================================================
 # Profile Management Functions
 # ============================================================================
@@ -310,11 +336,14 @@ def clone_voice_guest(reference_audio, target_text: str, ref_script: str | None 
     # Load model and generate
     model = get_model()
 
+    print(f"[TTS] Generating with lang_code={get_selected_language()}")
+
     # Generate speech with cloned voice using mlx-audio
     results = list(model.generate(
         text=target_text.strip(),
         ref_audio=ref_audio_mx,
         ref_text=script,
+        lang_code=get_selected_language(),
     ))
 
     # Convert mlx array to numpy and save
@@ -357,11 +386,14 @@ def generate_from_profile(profile_id: str, target_text: str) -> str:
 
     model = get_model()
 
+    print(f"[TTS] Generating with lang_code={get_selected_language()}")
+
     # Generate speech with profile's reference audio
     results = list(model.generate(
         text=target_text.strip(),
         ref_audio=ref_audio_mx,
         ref_text=ref_script,
+        lang_code=get_selected_language(),
     ))
 
     # Convert mlx array to numpy and save
@@ -410,6 +442,16 @@ def create_ui():
                         interactive=True,
                     )
                     model_status = gr.Markdown("")
+
+                    gr.Markdown("---")
+                    gr.Markdown("**Language**")
+                    language_dropdown = gr.Dropdown(
+                        choices=get_language_choices(),
+                        value=get_selected_language(),
+                        label="Output Language",
+                        interactive=True,
+                    )
+                    language_status = gr.Markdown("")
 
                     gr.Markdown("---")
                     gr.Markdown("**Global Default Script**")
@@ -657,6 +699,21 @@ def create_ui():
             fn=on_model_change,
             inputs=[model_dropdown],
             outputs=[model_status]
+        )
+
+        def on_language_change(language):
+            """Handle language selection change."""
+            try:
+                set_selected_language(language)
+                display_name = next((d for c, d in AVAILABLE_LANGUAGES if c == language), language)
+                return f"*Language set to {display_name}.*"
+            except Exception as e:
+                return f"*Error changing language: {str(e)}*"
+
+        language_dropdown.change(
+            fn=on_language_change,
+            inputs=[language_dropdown],
+            outputs=[language_status]
         )
 
         def on_save_settings(script):

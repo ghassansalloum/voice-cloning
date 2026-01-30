@@ -6,6 +6,7 @@ A local voice cloning application using Qwen3-TTS via MLX-Audio with a Gradio we
 
 - **Voice Profiles**: Save and manage multiple voice profiles for quick reuse
 - **Guest Mode**: Try voice cloning without creating a profile
+- **Multi-Language Support**: Generate speech in English or French (cross-lingual cloning supported)
 - **Customizable Scripts**: Edit the reference script used for voice capture
 - **Re-record Profiles**: Update existing profiles with new recordings
 - **Local Processing**: All processing happens on your device
@@ -71,12 +72,14 @@ python app.py
 
 ### Settings
 
+- **Model Selection**: Choose between different model sizes (0.6B 4-bit for speed, 0.6B bf16 for balance, 1.7B 4-bit for quality)
+- **Language**: Select the output language (English or French). Cross-lingual cloning is supported - you can record in English and generate French speech.
 - **Global Default Script**: Customize the reference script used for Guest mode and new profiles
 
 ## Notes
 
-- **First run**: The model (~1.2GB) will be downloaded and cached automatically
-- **Model**: Uses `Qwen/Qwen3-TTS-12Hz-0.6B-Base`
+- **First run**: The model will be downloaded and cached automatically
+- **Models**: Multiple Qwen3-TTS models available (0.6B and 1.7B variants)
 - **Sample rate**: 24000 Hz
 - **Recording tips**: Speak clearly in a quiet environment for best results
 - **Profile storage**: Profiles are saved in the `profiles/` directory
