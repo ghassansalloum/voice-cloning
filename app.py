@@ -483,6 +483,14 @@ def format_status(message: str, status_type: str = "info") -> str:
     return f'<div class="status-message status-{status_type}">{message}</div>'
 
 
+def check_microphone_status():
+    """Provide guidance on microphone access."""
+    return format_status(
+        "🎤 Ensure microphone permissions are enabled in your browser and system settings.",
+        "info"
+    )
+
+
 def create_ui():
     """Create and configure the Gradio interface."""
 
@@ -842,6 +850,45 @@ def create_ui():
 .gradio-container .accordion:first-of-type {
     margin-top: 24px !important;
 }
+
+/* Recording state - prominent visual feedback */
+.gradio-container .audio-container:has(button[aria-label*="Stop"]) {
+    border: 3px solid var(--danger) !important;
+    box-shadow: 0 0 20px rgba(255, 59, 48, 0.5) !important;
+    animation: recordPulse 1.5s ease-in-out infinite !important;
+}
+
+@keyframes recordPulse {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(255, 59, 48, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(255, 59, 48, 0.8);
+    }
+}
+
+/* Audio component labels during recording */
+.gradio-container .audio-container:has(button[aria-label*="Stop"]) .label {
+    color: var(--danger) !important;
+    font-weight: 700 !important;
+}
+
+.gradio-container .audio-container:has(button[aria-label*="Stop"])::before {
+    content: "● RECORDING" !important;
+    position: absolute !important;
+    top: -8px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    background: var(--danger) !important;
+    color: white !important;
+    padding: 4px 12px !important;
+    border-radius: 4px !important;
+    font-weight: 700 !important;
+    font-size: 11px !important;
+    letter-spacing: 0.1em !important;
+    z-index: 10 !important;
+    animation: pulse 1.5s ease-in-out infinite !important;
+}
 """
 
     with gr.Blocks(title="Voice Cloning with Qwen3-TTS") as app:
@@ -906,6 +953,10 @@ def create_ui():
                         interactive=True
                     )
 
+                    with gr.Row():
+                        new_voice_mic_check_btn = gr.Button("🎤 Check Microphone", size="sm")
+                        new_voice_mic_status = gr.Markdown("")
+
                     new_voice_audio = gr.Audio(
                         sources=["microphone"],
                         type="numpy",
@@ -931,6 +982,10 @@ def create_ui():
                         lines=4,
                         interactive=True
                     )
+
+                    with gr.Row():
+                        rerecord_mic_check_btn = gr.Button("🎤 Check Microphone", size="sm")
+                        rerecord_mic_status = gr.Markdown("")
 
                     rerecord_audio = gr.Audio(
                         sources=["microphone"],
@@ -1018,6 +1073,11 @@ def create_ui():
                             """)
 
                     gr.Markdown("### Record Your Voice")
+
+                    with gr.Row():
+                        guest_mic_check_btn = gr.Button("🎤 Check Microphone", size="sm")
+                        guest_mic_status = gr.Markdown("")
+
                     audio_input = gr.Audio(
                         sources=["microphone"],
                         type="numpy",
@@ -1065,6 +1125,22 @@ def create_ui():
         # ====================================================================
         # Event Handlers
         # ====================================================================
+
+        # Wire up microphone check buttons
+        new_voice_mic_check_btn.click(
+            fn=check_microphone_status,
+            outputs=[new_voice_mic_status]
+        )
+
+        rerecord_mic_check_btn.click(
+            fn=check_microphone_status,
+            outputs=[rerecord_mic_status]
+        )
+
+        guest_mic_check_btn.click(
+            fn=check_microphone_status,
+            outputs=[guest_mic_status]
+        )
 
         def toggle_new_voice():
             """Show new voice section, hide manage section."""
