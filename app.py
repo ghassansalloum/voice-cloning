@@ -778,9 +778,9 @@ def create_ui():
             # Sidebar - Voice Management
             # ================================================================
             with gr.Column(scale=1, min_width=250):
-                gr.Markdown("## Voices")
+                gr.Markdown("## Voice Library")
 
-                # Voice selector dropdown
+                # Voice selector dropdown - ALWAYS VISIBLE
                 voice_dropdown = gr.Dropdown(
                     choices=get_voice_choices(),
                     value=GUEST_VOICE_ID,
@@ -788,7 +788,7 @@ def create_ui():
                     interactive=True,
                 )
 
-                # Voice preview player
+                # Voice preview player - VISIBLE when voice selected
                 voice_preview_audio = gr.Audio(
                     label="Voice Sample",
                     type="filepath",
@@ -796,7 +796,7 @@ def create_ui():
                     visible=False
                 )
 
-                # Language selector (frequently changed, always visible)
+                # Language selector - ALWAYS VISIBLE (frequent use)
                 language_dropdown = gr.Dropdown(
                     choices=get_language_choices(),
                     value=get_selected_language(),
@@ -805,8 +805,18 @@ def create_ui():
                 )
                 language_status = gr.Markdown("")
 
-                # New Voice Section
-                with gr.Accordion("Create New Voice", open=False) as new_voice_accordion:
+                gr.Markdown("---")
+
+                # Quick Actions - ALWAYS VISIBLE
+                gr.Markdown("### Quick Actions")
+
+                with gr.Row():
+                    new_voice_btn = gr.Button("➕ New Voice", size="sm")
+                    manage_voices_btn = gr.Button("⚙️ Manage", size="sm")
+
+                # New Voice Section - Initially collapsed, opens on button click
+                with gr.Column(visible=False) as new_voice_section:
+                    gr.Markdown("#### Create New Voice")
                     new_voice_name = gr.Textbox(
                         label="Voice Name",
                         placeholder="Enter a name for this voice..."
@@ -826,12 +836,18 @@ def create_ui():
                         label="Record Voice"
                     )
 
-                    save_voice_btn = gr.Button("Save Voice", variant="primary")
+                    with gr.Row():
+                        cancel_new_btn = gr.Button("Cancel", size="sm")
+                        save_voice_btn = gr.Button("Save Voice", variant="primary", size="sm")
                     voice_status = gr.Markdown("")
 
-                # Re-record Voice Section
-                with gr.Accordion("Re-record Voice", open=False) as rerecord_accordion:
-                    rerecord_voice_name = gr.Markdown("*Select a saved voice to re-record*")
+                # Management Section - Initially collapsed, opens on button click
+                with gr.Column(visible=False) as manage_section:
+                    gr.Markdown("#### Manage Voices")
+
+                    # Re-record Voice
+                    gr.Markdown("**Re-record Selected Voice**")
+                    rerecord_voice_name = gr.Markdown("*Select a saved voice first*")
                     rerecord_script = gr.Textbox(
                         value=get_default_script(),
                         label="Reference Script (editable)",
@@ -848,8 +864,25 @@ def create_ui():
                     rerecord_btn = gr.Button("Update Voice", variant="primary", interactive=False)
                     rerecord_status = gr.Markdown("")
 
-                # Settings Section
-                with gr.Accordion("Settings", open=False):
+                    gr.Markdown("---")
+
+                    # Delete Voice
+                    gr.Markdown("**Delete Voice**")
+                    gr.Markdown("⚠️ This action cannot be undone.")
+                    delete_confirm_text = gr.Textbox(
+                        label="Type voice name to confirm",
+                        placeholder="Type voice name to enable delete",
+                        interactive=True
+                    )
+
+                    delete_voice_btn = gr.Button("Delete Selected Voice", variant="stop", interactive=False)
+                    delete_status = gr.Markdown("")
+
+                    with gr.Row():
+                        close_manage_btn = gr.Button("Close", size="sm")
+
+                # Settings Accordion - STILL an accordion (rarely changed)
+                with gr.Accordion("Advanced Settings", open=False):
                     gr.Markdown("**Model Selection**")
                     model_dropdown = gr.Dropdown(
                         choices=get_model_choices(),
@@ -860,7 +893,7 @@ def create_ui():
                     model_status = gr.Markdown("")
 
                     gr.Markdown("**Global Default Script**")
-                    gr.Markdown("*This script is used for Quick Test mode and new voices.*")
+                    gr.Markdown("*Used for Quick Test mode and new voices.*")
                     settings_script = gr.Textbox(
                         value=get_default_script(),
                         label="Default Reference Script",
@@ -869,20 +902,6 @@ def create_ui():
                     )
                     save_settings_btn = gr.Button("Save Settings", variant="primary")
                     settings_status = gr.Markdown("")
-
-                # Delete Voice Section
-                with gr.Accordion("Delete Voice", open=False, elem_classes=["danger"]):
-                    gr.Markdown("**⚠️ This action cannot be undone.**")
-                    gr.Markdown("Type the exact voice name below to confirm deletion:")
-
-                    delete_confirm_text = gr.Textbox(
-                        label="Voice name",
-                        placeholder="Type voice name to enable delete",
-                        interactive=True
-                    )
-
-                    delete_voice_btn = gr.Button("Delete Selected Voice", variant="stop", interactive=False)
-                    delete_status = gr.Markdown("")
 
             # ================================================================
             # Main Area - Voice Generation
@@ -943,6 +962,42 @@ def create_ui():
         # Event Handlers
         # ====================================================================
 
+        def toggle_new_voice():
+            """Show new voice section, hide manage section."""
+            return gr.update(visible=True), gr.update(visible=False)
+
+        def toggle_manage():
+            """Show manage section, hide new voice section."""
+            return gr.update(visible=False), gr.update(visible=True)
+
+        def close_new_voice():
+            """Hide new voice section."""
+            return gr.update(visible=False)
+
+        def close_manage():
+            """Hide manage section."""
+            return gr.update(visible=False)
+
+        new_voice_btn.click(
+            fn=toggle_new_voice,
+            outputs=[new_voice_section, manage_section]
+        )
+
+        manage_voices_btn.click(
+            fn=toggle_manage,
+            outputs=[new_voice_section, manage_section]
+        )
+
+        cancel_new_btn.click(
+            fn=close_new_voice,
+            outputs=[new_voice_section]
+        )
+
+        close_manage_btn.click(
+            fn=close_manage,
+            outputs=[manage_section]
+        )
+
         def on_voice_change(voice_id):
             """Handle voice selection change."""
             is_guest = voice_id == GUEST_VOICE_ID
@@ -989,6 +1044,7 @@ def create_ui():
                 return (
                     format_status("Please enter a voice name.", "error"),
                     gr.update(),  # dropdown stays same
+                    gr.update(visible=True),  # Keep new voice section open
                     *current_updates
                 )
 
@@ -997,6 +1053,7 @@ def create_ui():
                 return (
                     format_status("Please record your voice first.", "error"),
                     gr.update(),
+                    gr.update(visible=True),  # Keep new voice section open
                     *current_updates
                 )
 
@@ -1005,6 +1062,7 @@ def create_ui():
                 return (
                     format_status("Please enter a reference script.", "error"),
                     gr.update(),
+                    gr.update(visible=True),  # Keep new voice section open
                     *current_updates
                 )
 
@@ -1022,6 +1080,7 @@ def create_ui():
                 return (
                     format_status(f"✓ Voice '{name}' saved successfully!", "success"),
                     gr.update(choices=new_choices, value=voice_id),
+                    gr.update(visible=False),  # Close new voice section on success
                     *voice_updates  # Include all outputs from on_voice_change
                 )
             except Exception as e:
@@ -1030,6 +1089,7 @@ def create_ui():
                 return (
                     format_status(f"Error creating voice: {str(e)}", "error"),
                     gr.update(),
+                    gr.update(visible=True),  # Keep new voice section open on error
                     *current_updates
                 )
 
@@ -1039,6 +1099,7 @@ def create_ui():
             outputs=[
                 voice_status,
                 voice_dropdown,
+                new_voice_section,  # Control section visibility
                 current_voice_id,
                 voice_info,
                 recording_section,
