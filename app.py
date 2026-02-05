@@ -412,7 +412,58 @@ def generate_from_profile(profile_id: str, target_text: str) -> str:
 def create_ui():
     """Create and configure the Gradio interface."""
 
-    with gr.Blocks(title="Voice Cloning with Qwen3-TTS") as app:
+    custom_css = """
+/* Import professional fonts */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Syne:wght@700;800&display=swap');
+
+/* Root variables */
+:root {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --danger: #dc2626;
+    --danger-hover: #b91c1c;
+    --success: #16a34a;
+    --success-hover: #15803d;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --border: #e2e8f0;
+    --border-focus: #2563eb;
+}
+
+/* Typography */
+.gradio-container {
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+.gradio-container h2 {
+    font-family: 'Syne', sans-serif !important;
+    font-weight: 800 !important;
+    font-size: 20px !important;
+    letter-spacing: -0.02em !important;
+    color: var(--text-primary) !important;
+    margin-bottom: 16px !important;
+}
+
+.gradio-container h3 {
+    font-family: 'Syne', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 16px !important;
+    color: var(--text-primary) !important;
+    margin-bottom: 12px !important;
+}
+
+.gradio-container label {
+    font-weight: 500 !important;
+    font-size: 13px !important;
+    color: var(--text-secondary) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+}
+"""
+
+    with gr.Blocks(title="Voice Cloning with Qwen3-TTS", css=custom_css) as app:
 
         # State for tracking current profile selection
         current_profile_id = gr.State(value=GUEST_PROFILE_ID)
