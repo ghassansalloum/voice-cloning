@@ -658,8 +658,8 @@ def create_ui():
                     save_profile_btn = gr.Button("Save Profile", variant="primary")
                     profile_status = gr.Markdown("")
 
-                # Re-record Profile Section
-                with gr.Accordion("Re-record Profile", open=False) as rerecord_accordion:
+                # Re-record Voice Section
+                with gr.Accordion("Re-record Voice", open=False) as rerecord_accordion:
                     rerecord_profile_name = gr.Markdown("*Select a saved profile to re-record*")
                     rerecord_script = gr.Textbox(
                         value=get_default_script(),
