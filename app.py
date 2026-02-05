@@ -412,7 +412,300 @@ def generate_from_profile(profile_id: str, target_text: str) -> str:
 def create_ui():
     """Create and configure the Gradio interface."""
 
-    with gr.Blocks(title="Voice Cloning with Qwen3-TTS") as app:
+    custom_css = """
+/* Import professional fonts */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Syne:wght@700;800&display=swap');
+
+/* Root variables - Ableton-inspired dark theme */
+:root {
+    --primary: #ff764d;
+    --primary-hover: #ff9575;
+    --danger: #ff3b30;
+    --danger-hover: #ff6259;
+    --success: #30d158;
+    --success-hover: #5ae67f;
+    --text-primary: #e8e8e8;
+    --text-secondary: #a0a0a0;
+    --text-tertiary: #707070;
+    --bg-primary: #000000;
+    --bg-secondary: #1a1a1a;
+    --border: #2a2a2a;
+    --border-focus: #ff764d;
+}
+
+/* Typography */
+.gradio-container {
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    background-color: var(--bg-primary) !important;
+}
+
+.gradio-container h1 {
+    font-family: 'Syne', sans-serif !important;
+    font-weight: 800 !important;
+    font-size: 24px !important;
+    letter-spacing: -0.02em !important;
+    color: var(--text-primary) !important;
+    margin-bottom: 16px !important;
+}
+
+.gradio-container h2 {
+    font-family: 'Syne', sans-serif !important;
+    font-weight: 800 !important;
+    font-size: 20px !important;
+    letter-spacing: -0.02em !important;
+    color: var(--text-primary) !important;
+    margin-bottom: 16px !important;
+}
+
+.gradio-container h3 {
+    font-family: 'Syne', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 16px !important;
+    color: var(--text-primary) !important;
+    margin-bottom: 12px !important;
+}
+
+.gradio-container label {
+    font-weight: 500 !important;
+    font-size: 13px !important;
+    color: var(--text-secondary) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+}
+
+.gradio-container p,
+.gradio-container .markdown {
+    color: var(--text-secondary) !important;
+}
+
+/* Button hierarchy */
+.gradio-container button {
+    font-weight: 500 !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+    border: 1px solid var(--border) !important;
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}
+
+.gradio-container button:hover {
+    background: #252525 !important;
+    border-color: #3a3a3a !important;
+}
+
+.gradio-container button.primary {
+    background: var(--primary) !important;
+    color: #000000 !important;
+    border-color: var(--primary) !important;
+}
+
+.gradio-container button.primary:hover {
+    background: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(255, 118, 77, 0.4) !important;
+}
+
+.gradio-container button.stop {
+    background: var(--danger) !important;
+    color: white !important;
+    border-color: var(--danger) !important;
+}
+
+.gradio-container button.stop:hover {
+    background: var(--danger-hover) !important;
+    border-color: var(--danger-hover) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(255, 59, 48, 0.4) !important;
+}
+
+.gradio-container button:disabled {
+    opacity: 0.3 !important;
+    cursor: not-allowed !important;
+}
+
+/* Accordion hierarchy */
+.gradio-container .accordion {
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    margin-bottom: 12px !important;
+    transition: all 0.2s ease !important;
+    background: var(--bg-secondary) !important;
+}
+
+.gradio-container .accordion:hover {
+    border-color: #3a3a3a !important;
+    box-shadow: 0 2px 8px rgba(255, 118, 77, 0.1) !important;
+}
+
+.gradio-container .accordion summary {
+    font-weight: 600 !important;
+    padding: 12px 16px !important;
+    cursor: pointer !important;
+    user-select: none !important;
+    color: var(--text-primary) !important;
+}
+
+/* Danger zone accordion */
+.gradio-container .accordion.danger {
+    border-color: var(--danger) !important;
+    background: rgba(255, 59, 48, 0.05) !important;
+}
+
+.gradio-container .accordion.danger summary {
+    color: var(--danger) !important;
+}
+
+.gradio-container .accordion.danger:hover {
+    border-color: var(--danger) !important;
+    box-shadow: 0 2px 8px rgba(255, 59, 48, 0.2) !important;
+}
+
+/* Form inputs */
+.gradio-container input[type="text"],
+.gradio-container textarea,
+.gradio-container select {
+    border: 1px solid var(--border) !important;
+    border-radius: 6px !important;
+    padding: 10px 12px !important;
+    transition: all 0.2s ease !important;
+    font-family: 'DM Sans', sans-serif !important;
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}
+
+.gradio-container input[type="text"]:focus,
+.gradio-container textarea:focus,
+.gradio-container select:focus {
+    outline: none !important;
+    border-color: var(--border-focus) !important;
+    box-shadow: 0 0 0 3px rgba(255, 118, 77, 0.2) !important;
+    background: #222222 !important;
+}
+
+/* Audio components */
+.gradio-container .audio-container,
+.gradio-container .audio-wrapper {
+    background: var(--bg-secondary) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+}
+
+.gradio-container .audio-container span,
+.gradio-container .audio-wrapper span,
+.gradio-container .audio-container div,
+.gradio-container .audio-wrapper div {
+    color: var(--text-primary) !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+}
+
+/* Smooth transitions */
+.gradio-container .accordion {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.gradio-container .accordion[open] {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Accordion content fade-in */
+.gradio-container .accordion > div {
+    animation: fadeIn 0.2s ease-in-out !important;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Button press animation */
+.gradio-container button:active {
+    transform: translateY(0) !important;
+    box-shadow: none !important;
+}
+
+/* Keyboard focus states */
+.gradio-container button:focus-visible,
+.gradio-container .accordion summary:focus-visible {
+    outline: 2px solid var(--primary) !important;
+    outline-offset: 2px !important;
+}
+
+/* Spacing */
+.gradio-container hr {
+    border: none !important;
+    border-top: 1px solid var(--border) !important;
+    margin: 20px 0 !important;
+}
+
+/* Sidebar specific */
+.gradio-container .block:first-child > .form > .col:first-child {
+    padding: 24px !important;
+}
+
+/* Status messages */
+.gradio-container .markdown em {
+    display: block !important;
+    padding: 10px 14px !important;
+    border-radius: 6px !important;
+    font-style: normal !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    margin: 8px 0 !important;
+    border-left: 3px solid transparent !important;
+}
+
+/* Success messages */
+.gradio-container .markdown em:first-line {
+    font-weight: 600 !important;
+}
+
+/* Enhance visibility for all status messages */
+.gradio-container .markdown:not(:empty) {
+    background: rgba(255, 118, 77, 0.05) !important;
+    border-left: 3px solid var(--primary) !important;
+}
+
+/* Final polish */
+.gradio-container {
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* Improve overall spacing */
+.gradio-container .block {
+    gap: 0 !important;
+}
+
+/* Clean up markdown spacing */
+.gradio-container .markdown {
+    margin-bottom: 8px !important;
+}
+
+.gradio-container .markdown:empty {
+    display: none !important;
+}
+
+/* Vertical spacing between major sections */
+.gradio-container .accordion {
+    margin-top: 16px !important;
+    margin-bottom: 16px !important;
+}
+
+.gradio-container .accordion:first-of-type {
+    margin-top: 24px !important;
+}
+"""
+
+    with gr.Blocks(title="Voice Cloning with Qwen3-TTS", css=custom_css) as app:
 
         # State for tracking current profile selection
         current_profile_id = gr.State(value=GUEST_PROFILE_ID)
@@ -432,38 +725,14 @@ def create_ui():
                     interactive=True,
                 )
 
-                # Settings Section
-                with gr.Accordion("Settings", open=False):
-                    gr.Markdown("**Model Selection**")
-                    model_dropdown = gr.Dropdown(
-                        choices=get_model_choices(),
-                        value=get_selected_model_id(),
-                        label="TTS Model",
-                        interactive=True,
-                    )
-                    model_status = gr.Markdown("")
-
-                    gr.Markdown("---")
-                    gr.Markdown("**Language**")
-                    language_dropdown = gr.Dropdown(
-                        choices=get_language_choices(),
-                        value=get_selected_language(),
-                        label="Output Language",
-                        interactive=True,
-                    )
-                    language_status = gr.Markdown("")
-
-                    gr.Markdown("---")
-                    gr.Markdown("**Global Default Script**")
-                    gr.Markdown("*This script is used for Guest mode and new profiles.*")
-                    settings_script = gr.Textbox(
-                        value=get_default_script(),
-                        label="Default Reference Script",
-                        lines=4,
-                        interactive=True
-                    )
-                    save_settings_btn = gr.Button("Save Settings", variant="primary")
-                    settings_status = gr.Markdown("")
+                # Language selector (frequently changed, always visible)
+                language_dropdown = gr.Dropdown(
+                    choices=get_language_choices(),
+                    value=get_selected_language(),
+                    label="Output Language",
+                    interactive=True,
+                )
+                language_status = gr.Markdown("")
 
                 # New Profile Section
                 with gr.Accordion("Create New Profile", open=False) as new_profile_accordion:
@@ -489,8 +758,8 @@ def create_ui():
                     save_profile_btn = gr.Button("Save Profile", variant="primary")
                     profile_status = gr.Markdown("")
 
-                # Re-record Profile Section
-                with gr.Accordion("Re-record Profile", open=False) as rerecord_accordion:
+                # Re-record Voice Section
+                with gr.Accordion("Re-record Voice", open=False) as rerecord_accordion:
                     rerecord_profile_name = gr.Markdown("*Select a saved profile to re-record*")
                     rerecord_script = gr.Textbox(
                         value=get_default_script(),
@@ -508,12 +777,40 @@ def create_ui():
                     rerecord_btn = gr.Button("Update Voice", variant="primary", interactive=False)
                     rerecord_status = gr.Markdown("")
 
-                gr.Markdown("---")
+                # Settings Section
+                with gr.Accordion("Settings", open=False):
+                    gr.Markdown("**Model Selection**")
+                    model_dropdown = gr.Dropdown(
+                        choices=get_model_choices(),
+                        value=get_selected_model_id(),
+                        label="TTS Model",
+                        interactive=True,
+                    )
+                    model_status = gr.Markdown("")
+
+                    gr.Markdown("**Global Default Script**")
+                    gr.Markdown("*This script is used for Guest mode and new profiles.*")
+                    settings_script = gr.Textbox(
+                        value=get_default_script(),
+                        label="Default Reference Script",
+                        lines=4,
+                        interactive=True
+                    )
+                    save_settings_btn = gr.Button("Save Settings", variant="primary")
+                    settings_status = gr.Markdown("")
 
                 # Delete Profile Section
-                with gr.Accordion("Delete Profile", open=False):
-                    gr.Markdown("*Select a profile above, then click delete.*")
-                    delete_profile_btn = gr.Button("Delete Selected Profile", variant="stop")
+                with gr.Accordion("Delete Profile", open=False, elem_classes=["danger"]):
+                    gr.Markdown("**⚠️ This action cannot be undone.**")
+                    gr.Markdown("Type the exact profile name below to confirm deletion:")
+
+                    delete_confirm_text = gr.Textbox(
+                        label="Profile name",
+                        placeholder="Type profile name to enable delete",
+                        interactive=True
+                    )
+
+                    delete_profile_btn = gr.Button("Delete Selected Profile", variant="stop", interactive=False)
                     delete_status = gr.Markdown("")
 
             # ================================================================
@@ -600,12 +897,13 @@ def create_ui():
                 rerecord_name_text,  # Update rerecord_profile_name
                 gr.update(interactive=not is_guest),  # Enable/disable rerecord_btn
                 "",  # Clear rerecord_status
+                "",  # Reset delete confirmation text
             )
 
         profile_dropdown.change(
             fn=on_profile_change,
             inputs=[profile_dropdown],
-            outputs=[current_profile_id, profile_info, recording_section, profile_mode_info, rerecord_script, rerecord_profile_name, rerecord_btn, rerecord_status]
+            outputs=[current_profile_id, profile_info, recording_section, profile_mode_info, rerecord_script, rerecord_profile_name, rerecord_btn, rerecord_status, delete_confirm_text]
         )
 
         def on_save_profile(name, audio, script):
@@ -637,7 +935,7 @@ def create_ui():
                 new_choices = get_profile_choices()
 
                 return (
-                    f"*Profile '{name}' created successfully!*",
+                    f"*✓ Profile '{name}' saved successfully!*",
                     gr.update(choices=new_choices, value=profile_id),
                 )
             except Exception as e:
@@ -652,6 +950,19 @@ def create_ui():
             outputs=[profile_status, profile_dropdown]
         )
 
+        def on_delete_confirm_change(profile_id, confirm_text):
+            """Enable delete button only if typed name matches selected profile."""
+            if profile_id == GUEST_PROFILE_ID:
+                return gr.update(interactive=False)
+
+            profiles = load_profiles()
+            profile = next((p for p in profiles if p["id"] == profile_id), None)
+
+            if profile and confirm_text.strip() == profile["name"]:
+                return gr.update(interactive=True)
+            else:
+                return gr.update(interactive=False)
+
         def on_delete_profile(profile_id):
             """Handle profile deletion."""
             if profile_id == GUEST_PROFILE_ID:
@@ -659,6 +970,7 @@ def create_ui():
                     "*Cannot delete Guest profile.*",
                     gr.update(),
                     GUEST_PROFILE_ID,
+                    "",  # Reset text field
                 )
 
             profiles = load_profiles()
@@ -668,21 +980,29 @@ def create_ui():
             if delete_profile(profile_id):
                 new_choices = get_profile_choices()
                 return (
-                    f"*Profile '{name}' deleted.*",
+                    f"*✓ Profile '{name}' deleted*",
                     gr.update(choices=new_choices, value=GUEST_PROFILE_ID),
                     GUEST_PROFILE_ID,
+                    "",  # Reset text field
                 )
             else:
                 return (
                     "*Profile not found.*",
                     gr.update(),
                     profile_id,
+                    "",  # Reset text field
                 )
+
+        delete_confirm_text.change(
+            fn=on_delete_confirm_change,
+            inputs=[current_profile_id, delete_confirm_text],
+            outputs=[delete_profile_btn]
+        )
 
         delete_profile_btn.click(
             fn=on_delete_profile,
             inputs=[current_profile_id],
-            outputs=[delete_status, profile_dropdown, current_profile_id]
+            outputs=[delete_status, profile_dropdown, current_profile_id, delete_confirm_text]
         )
 
         def on_model_change(model_id):
@@ -802,11 +1122,30 @@ def create_ui():
             outputs=[audio_output, status]
         )
 
-        # Trigger profile change on load to set initial visibility
+        def on_page_load(profile_id):
+            """Refresh dropdown choices and trigger profile change on page load."""
+            # Get fresh profile choices
+            fresh_choices = get_profile_choices()
+
+            # Ensure the selected profile still exists, otherwise default to guest
+            valid_ids = [pid for _, pid in fresh_choices]
+            if profile_id not in valid_ids:
+                profile_id = GUEST_PROFILE_ID
+
+            # Get profile change updates
+            profile_updates = on_profile_change(profile_id)
+
+            # Return dropdown update + profile change updates
+            return (
+                gr.update(choices=fresh_choices, value=profile_id),  # Update dropdown
+                *profile_updates  # Unpack profile change outputs
+            )
+
+        # Trigger dropdown refresh and profile change on load
         app.load(
-            fn=on_profile_change,
+            fn=on_page_load,
             inputs=[profile_dropdown],
-            outputs=[current_profile_id, profile_info, recording_section, profile_mode_info, rerecord_script, rerecord_profile_name, rerecord_btn, rerecord_status]
+            outputs=[profile_dropdown, current_profile_id, profile_info, recording_section, profile_mode_info, rerecord_script, rerecord_profile_name, rerecord_btn, rerecord_status, delete_confirm_text]
         )
 
     return app
