@@ -650,6 +650,29 @@ def create_ui():
 .gradio-container .block:first-child > .form > .col:first-child {
     padding: 24px !important;
 }
+
+/* Status messages */
+.gradio-container .markdown em {
+    display: block !important;
+    padding: 10px 14px !important;
+    border-radius: 6px !important;
+    font-style: normal !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    margin: 8px 0 !important;
+    border-left: 3px solid transparent !important;
+}
+
+/* Success messages */
+.gradio-container .markdown em:first-line {
+    font-weight: 600 !important;
+}
+
+/* Enhance visibility for all status messages */
+.gradio-container .markdown:not(:empty) {
+    background: rgba(255, 118, 77, 0.05) !important;
+    border-left: 3px solid var(--primary) !important;
+}
 """
 
     with gr.Blocks(title="Voice Cloning with Qwen3-TTS", css=custom_css) as app:
@@ -882,7 +905,7 @@ def create_ui():
                 new_choices = get_profile_choices()
 
                 return (
-                    f"*Profile '{name}' created successfully!*",
+                    f"*✓ Profile '{name}' saved successfully!*",
                     gr.update(choices=new_choices, value=profile_id),
                 )
             except Exception as e:
@@ -927,7 +950,7 @@ def create_ui():
             if delete_profile(profile_id):
                 new_choices = get_profile_choices()
                 return (
-                    f"*Profile '{name}' deleted.*",
+                    f"*✓ Profile '{name}' deleted*",
                     gr.update(choices=new_choices, value=GUEST_PROFILE_ID),
                     GUEST_PROFILE_ID,
                     "",  # Reset text field
