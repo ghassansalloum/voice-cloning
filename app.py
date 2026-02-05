@@ -672,36 +672,14 @@ def create_ui():
                     interactive=True,
                 )
 
-                # Settings Section
-                with gr.Accordion("Settings", open=False):
-                    gr.Markdown("**Model Selection**")
-                    model_dropdown = gr.Dropdown(
-                        choices=get_model_choices(),
-                        value=get_selected_model_id(),
-                        label="TTS Model",
-                        interactive=True,
-                    )
-                    model_status = gr.Markdown("")
-
-                    gr.Markdown("**Language**")
-                    language_dropdown = gr.Dropdown(
-                        choices=get_language_choices(),
-                        value=get_selected_language(),
-                        label="Output Language",
-                        interactive=True,
-                    )
-                    language_status = gr.Markdown("")
-
-                    gr.Markdown("**Global Default Script**")
-                    gr.Markdown("*This script is used for Guest mode and new profiles.*")
-                    settings_script = gr.Textbox(
-                        value=get_default_script(),
-                        label="Default Reference Script",
-                        lines=4,
-                        interactive=True
-                    )
-                    save_settings_btn = gr.Button("Save Settings", variant="primary")
-                    settings_status = gr.Markdown("")
+                # Language selector (frequently changed, always visible)
+                language_dropdown = gr.Dropdown(
+                    choices=get_language_choices(),
+                    value=get_selected_language(),
+                    label="Output Language",
+                    interactive=True,
+                )
+                language_status = gr.Markdown("")
 
                 # New Profile Section
                 with gr.Accordion("Create New Profile", open=False) as new_profile_accordion:
@@ -745,6 +723,28 @@ def create_ui():
 
                     rerecord_btn = gr.Button("Update Voice", variant="primary", interactive=False)
                     rerecord_status = gr.Markdown("")
+
+                # Settings Section
+                with gr.Accordion("Settings", open=False):
+                    gr.Markdown("**Model Selection**")
+                    model_dropdown = gr.Dropdown(
+                        choices=get_model_choices(),
+                        value=get_selected_model_id(),
+                        label="TTS Model",
+                        interactive=True,
+                    )
+                    model_status = gr.Markdown("")
+
+                    gr.Markdown("**Global Default Script**")
+                    gr.Markdown("*This script is used for Guest mode and new profiles.*")
+                    settings_script = gr.Textbox(
+                        value=get_default_script(),
+                        label="Default Reference Script",
+                        lines=4,
+                        interactive=True
+                    )
+                    save_settings_btn = gr.Button("Save Settings", variant="primary")
+                    settings_status = gr.Markdown("")
 
                 # Delete Profile Section
                 with gr.Accordion("Delete Profile", open=False, elem_classes=["danger"]):
