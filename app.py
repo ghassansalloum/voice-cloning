@@ -673,6 +673,36 @@ def create_ui():
     background: rgba(255, 118, 77, 0.05) !important;
     border-left: 3px solid var(--primary) !important;
 }
+
+/* Final polish */
+.gradio-container {
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+}
+
+/* Improve overall spacing */
+.gradio-container .block {
+    gap: 0 !important;
+}
+
+/* Clean up markdown spacing */
+.gradio-container .markdown {
+    margin-bottom: 8px !important;
+}
+
+.gradio-container .markdown:empty {
+    display: none !important;
+}
+
+/* Vertical spacing between major sections */
+.gradio-container .accordion {
+    margin-top: 16px !important;
+    margin-bottom: 16px !important;
+}
+
+.gradio-container .accordion:first-of-type {
+    margin-top: 24px !important;
+}
 """
 
     with gr.Blocks(title="Voice Cloning with Qwen3-TTS", css=custom_css) as app:
