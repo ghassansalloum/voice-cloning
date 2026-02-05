@@ -583,6 +583,24 @@ def create_ui():
     background: #222222 !important;
 }
 
+/* Audio components */
+.gradio-container .audio-container,
+.gradio-container .audio-wrapper {
+    background: var(--bg-secondary) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+}
+
+.gradio-container .audio-container span,
+.gradio-container .audio-wrapper span,
+.gradio-container .audio-container div,
+.gradio-container .audio-wrapper div {
+    color: var(--text-primary) !important;
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+}
+
 /* Spacing */
 .gradio-container hr {
     border: none !important;
