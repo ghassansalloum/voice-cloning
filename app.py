@@ -317,6 +317,47 @@ def normalize_audio(audio_data: np.ndarray) -> np.ndarray:
     return audio_data
 
 
+def validate_recording(audio_tuple) -> tuple[bool, str]:
+    """
+    Validate a recording for quality and duration.
+
+    Args:
+        audio_tuple: Gradio audio tuple (sample_rate, audio_data)
+
+    Returns:
+        (is_valid, message) tuple
+    """
+    if audio_tuple is None:
+        return False, "No recording found. Please record your voice first."
+
+    sample_rate, audio_data = audio_tuple
+    audio_data = normalize_audio(audio_data)
+
+    # Check duration (at least 3 seconds)
+    duration = len(audio_data) / sample_rate
+    if duration < 3.0:
+        return False, f"Recording too short ({duration:.1f}s). Please record at least 3 seconds."
+
+    # Check if recording is too quiet (RMS amplitude)
+    rms = np.sqrt(np.mean(audio_data ** 2))
+    if rms < 0.01:
+        return False, "Recording too quiet. Please speak louder or move closer to the microphone."
+
+    # Check if recording is clipping
+    peak = np.max(np.abs(audio_data))
+    if peak > 0.95:
+        return False, f"Recording is clipping (peak: {peak:.2f}). Please reduce input volume or move away from microphone."
+
+    return True, f"✓ Recording valid ({duration:.1f}s, peak: {peak:.2f})"
+
+
+def on_audio_recorded(audio_tuple):
+    """Provide immediate feedback when audio is recorded."""
+    is_valid, message = validate_recording(audio_tuple)
+    status_type = "success" if is_valid else "warning"
+    return format_status(message, status_type)
+
+
 # ============================================================================
 # Voice Generation Functions
 # ============================================================================
@@ -737,6 +778,27 @@ def create_ui():
     color: #ffcc00 !important;
 }
 
+/* Recording feedback */
+.gradio-container .audio-container {
+    position: relative !important;
+}
+
+.gradio-container .audio-container.recording::after {
+    content: "● REC" !important;
+    position: absolute !important;
+    top: 12px !important;
+    right: 12px !important;
+    color: var(--danger) !important;
+    font-weight: 700 !important;
+    font-size: 12px !important;
+    animation: pulse 1.5s ease-in-out infinite !important;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
 /* Final polish */
 .gradio-container {
     -webkit-font-smoothing: antialiased !important;
@@ -768,7 +830,7 @@ def create_ui():
 }
 """
 
-    with gr.Blocks(title="Voice Cloning with Qwen3-TTS", css=custom_css) as app:
+    with gr.Blocks(title="Voice Cloning with Qwen3-TTS") as app:
 
         # State for tracking current voice selection
         current_voice_id = gr.State(value=GUEST_VOICE_ID)
@@ -835,6 +897,7 @@ def create_ui():
                         type="numpy",
                         label="Record Voice"
                     )
+                    new_voice_feedback = gr.Markdown("")
 
                     with gr.Row():
                         cancel_new_btn = gr.Button("Cancel", size="sm")
@@ -860,6 +923,7 @@ def create_ui():
                         type="numpy",
                         label="Record New Voice"
                     )
+                    rerecord_feedback = gr.Markdown("")
 
                     rerecord_btn = gr.Button("Update Voice", variant="primary", interactive=False)
                     rerecord_status = gr.Markdown("")
@@ -930,6 +994,7 @@ def create_ui():
                         type="numpy",
                         label="Record yourself reading the script above"
                     )
+                    audio_input_feedback = gr.Markdown("")
 
                 # Voice mode message (when using saved voice)
                 voice_mode_info = gr.Markdown(
@@ -998,6 +1063,25 @@ def create_ui():
             outputs=[manage_section]
         )
 
+        # Wire up audio validation feedback
+        new_voice_audio.change(
+            fn=on_audio_recorded,
+            inputs=[new_voice_audio],
+            outputs=[new_voice_feedback]
+        )
+
+        rerecord_audio.change(
+            fn=on_audio_recorded,
+            inputs=[rerecord_audio],
+            outputs=[rerecord_feedback]
+        )
+
+        audio_input.change(
+            fn=on_audio_recorded,
+            inputs=[audio_input],
+            outputs=[audio_input_feedback]
+        )
+
         def on_voice_change(voice_id):
             """Handle voice selection change."""
             is_guest = voice_id == GUEST_VOICE_ID
@@ -1052,6 +1136,17 @@ def create_ui():
                 current_updates = on_voice_change(GUEST_VOICE_ID)
                 return (
                     format_status("Please record your voice first.", "error"),
+                    gr.update(),
+                    gr.update(visible=True),  # Keep new voice section open
+                    *current_updates
+                )
+
+            # Validate recording quality
+            is_valid, validation_msg = validate_recording(audio)
+            if not is_valid:
+                current_updates = on_voice_change(GUEST_VOICE_ID)
+                return (
+                    format_status(validation_msg, "error"),
                     gr.update(),
                     gr.update(visible=True),  # Keep new voice section open
                     *current_updates
@@ -1232,6 +1327,15 @@ def create_ui():
                     gr.update(),  # Keep preview unchanged
                 )
 
+            # Validate recording quality
+            is_valid, validation_msg = validate_recording(audio)
+            if not is_valid:
+                return (
+                    format_status(validation_msg, "error"),
+                    gr.update(),  # Keep audio as-is
+                    gr.update(),  # Keep preview unchanged
+                )
+
             if not script or not script.strip():
                 return (
                     format_status("Please enter a reference script.", "error"),
@@ -1321,7 +1425,7 @@ def create_ui():
             outputs=[voice_dropdown, current_voice_id, voice_info, recording_section, voice_mode_info, rerecord_script, rerecord_voice_name, rerecord_btn, rerecord_status, delete_confirm_text, voice_preview_audio]
         )
 
-    return app
+    return app, custom_css
 
 
 def migrate_profiles_to_voices():
@@ -1397,5 +1501,5 @@ def migrate_profiles_to_voices():
 
 if __name__ == "__main__":
     migrate_profiles_to_voices()
-    app = create_ui()
-    app.launch(server_name="127.0.0.1", server_port=7860)
+    app_instance, custom_css = create_ui()
+    app_instance.launch(server_name="127.0.0.1", server_port=7860, css=custom_css)
