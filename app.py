@@ -889,6 +889,24 @@ def create_ui():
     z-index: 10 !important;
     animation: pulse 1.5s ease-in-out infinite !important;
 }
+
+/* Loading state for generate button */
+.gradio-container button.generating {
+    background: repeating-linear-gradient(
+        45deg,
+        var(--primary),
+        var(--primary) 10px,
+        var(--primary-hover) 10px,
+        var(--primary-hover) 20px
+    ) !important;
+    background-size: 200% 200% !important;
+    animation: loadingStripes 2s linear infinite !important;
+}
+
+@keyframes loadingStripes {
+    0% { background-position: 0% 0%; }
+    100% { background-position: 100% 100%; }
+}
 """
 
     with gr.Blocks(title="Voice Cloning with Qwen3-TTS") as app:
@@ -1111,6 +1129,7 @@ def create_ui():
                         """)
 
                 generate_btn = gr.Button("🎵 Generate Voice", variant="primary", size="lg", scale=2)
+                gr.Markdown("*Generation typically takes 5-15 seconds depending on text length and model.*")
 
                 # Output Section
                 gr.Markdown("### Output")
@@ -1499,18 +1518,29 @@ def create_ui():
             outputs=[rerecord_status, rerecord_audio, voice_preview_audio]  # Add voice_preview_audio
         )
 
-        def on_generate(voice_id, audio, text, guest_ref_script):
-            """Handle voice generation."""
+        def on_generate(voice_id, audio, text, guest_ref_script, progress=gr.Progress()):
+            """Handle voice generation with progress tracking."""
             try:
+                progress(0, desc="Initializing...")
+
                 if voice_id == GUEST_VOICE_ID:
+                    progress(0.2, desc="Processing reference audio...")
                     result = clone_voice_guest(audio, text, guest_ref_script)
                 else:
+                    progress(0.2, desc="Loading voice...")
                     result = generate_from_voice(voice_id, text)
-                return result, format_status("✓ Generation complete!", "success")
+
+                progress(0.8, desc="Generating speech...")
+                # Generation happens in the functions above
+
+                progress(1.0, desc="Complete!")
+                return result, format_status("✓ Generation complete! Play or download below.", "success")
             except gr.Error as e:
+                progress(1.0, desc="Failed")
                 raise e
             except Exception as e:
-                return None, format_status(f"Error: {str(e)}", "error")
+                progress(1.0, desc="Failed")
+                return None, format_status(f"Generation failed: {str(e)}", "error")
 
         generate_btn.click(
             fn=on_generate,
