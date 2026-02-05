@@ -428,6 +428,20 @@ def generate_from_voice(voice_id: str, target_text: str) -> str:
 # Gradio UI
 # ============================================================================
 
+def format_status(message: str, status_type: str = "info") -> str:
+    """
+    Format a status message with appropriate styling.
+
+    Args:
+        message: The status message text
+        status_type: One of "success", "error", "info", "warning"
+
+    Returns:
+        Formatted markdown string with CSS classes
+    """
+    return f'<div class="status-message status-{status_type}">{message}</div>'
+
+
 def create_ui():
     """Create and configure the Gradio interface."""
 
@@ -670,27 +684,57 @@ def create_ui():
     padding: 24px !important;
 }
 
-/* Status messages */
-.gradio-container .markdown em {
+/* Status messages - Toast style */
+.gradio-container .markdown.status-message {
     display: block !important;
-    padding: 10px 14px !important;
-    border-radius: 6px !important;
+    padding: 16px 20px !important;
+    border-radius: 8px !important;
     font-style: normal !important;
-    font-size: 13px !important;
-    font-weight: 500 !important;
-    margin: 8px 0 !important;
-    border-left: 3px solid transparent !important;
-}
-
-/* Success messages */
-.gradio-container .markdown em:first-line {
+    font-size: 14px !important;
     font-weight: 600 !important;
+    margin: 12px 0 !important;
+    border-left: 4px solid transparent !important;
+    animation: slideIn 0.3s ease-out !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
 }
 
-/* Enhance visibility for all status messages */
-.gradio-container .markdown:not(:empty) {
-    background: rgba(255, 118, 77, 0.05) !important;
-    border-left: 3px solid var(--primary) !important;
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Success status */
+.gradio-container .markdown.status-success {
+    background: rgba(48, 209, 88, 0.15) !important;
+    border-left-color: var(--success) !important;
+    color: var(--success) !important;
+}
+
+/* Error status */
+.gradio-container .markdown.status-error {
+    background: rgba(255, 59, 48, 0.15) !important;
+    border-left-color: var(--danger) !important;
+    color: var(--danger) !important;
+}
+
+/* Info status */
+.gradio-container .markdown.status-info {
+    background: rgba(255, 118, 77, 0.15) !important;
+    border-left-color: var(--primary) !important;
+    color: var(--primary) !important;
+}
+
+/* Warning status */
+.gradio-container .markdown.status-warning {
+    background: rgba(255, 204, 0, 0.15) !important;
+    border-left-color: #ffcc00 !important;
+    color: #ffcc00 !important;
 }
 
 /* Final polish */
@@ -893,7 +937,7 @@ def create_ui():
                     interactive=False
                 )
 
-                status = gr.Markdown("*Status: Ready. Select a voice or record your voice to begin.*")
+                status = gr.Markdown("")
 
         # ====================================================================
         # Event Handlers
@@ -943,7 +987,7 @@ def create_ui():
             if not name or not name.strip():
                 current_updates = on_voice_change(GUEST_VOICE_ID)
                 return (
-                    "*Please enter a voice name.*",
+                    format_status("Please enter a voice name.", "error"),
                     gr.update(),  # dropdown stays same
                     *current_updates
                 )
@@ -951,7 +995,7 @@ def create_ui():
             if audio is None:
                 current_updates = on_voice_change(GUEST_VOICE_ID)
                 return (
-                    "*Please record your voice first.*",
+                    format_status("Please record your voice first.", "error"),
                     gr.update(),
                     *current_updates
                 )
@@ -959,7 +1003,7 @@ def create_ui():
             if not script or not script.strip():
                 current_updates = on_voice_change(GUEST_VOICE_ID)
                 return (
-                    "*Please enter a reference script.*",
+                    format_status("Please enter a reference script.", "error"),
                     gr.update(),
                     *current_updates
                 )
@@ -976,7 +1020,7 @@ def create_ui():
                 voice_updates = on_voice_change(voice_id)
 
                 return (
-                    f"*✓ Voice '{name}' saved successfully!*",
+                    format_status(f"✓ Voice '{name}' saved successfully!", "success"),
                     gr.update(choices=new_choices, value=voice_id),
                     *voice_updates  # Include all outputs from on_voice_change
                 )
@@ -984,7 +1028,7 @@ def create_ui():
                 # Keep current state on error
                 current_updates = on_voice_change(GUEST_VOICE_ID)
                 return (
-                    f"*Error creating voice: {str(e)}*",
+                    format_status(f"Error creating voice: {str(e)}", "error"),
                     gr.update(),
                     *current_updates
                 )
@@ -1025,7 +1069,7 @@ def create_ui():
             """Handle voice deletion."""
             if voice_id == GUEST_VOICE_ID:
                 return (
-                    "*Cannot delete Quick Test voice.*",
+                    format_status("Cannot delete Quick Test voice.", "error"),
                     gr.update(),
                     GUEST_VOICE_ID,
                     "",  # Reset text field
@@ -1038,14 +1082,14 @@ def create_ui():
             if delete_voice(voice_id):
                 new_choices = get_voice_choices()
                 return (
-                    f"*✓ Voice '{name}' deleted*",
+                    format_status(f"✓ Voice '{name}' deleted successfully!", "success"),
                     gr.update(choices=new_choices, value=GUEST_VOICE_ID),
                     GUEST_VOICE_ID,
                     "",  # Reset text field
                 )
             else:
                 return (
-                    "*Voice not found.*",
+                    format_status("Voice not found.", "error"),
                     gr.update(),
                     voice_id,
                     "",  # Reset text field
@@ -1069,9 +1113,9 @@ def create_ui():
                 set_selected_model_id(model_id)
                 # Find the model name for display
                 model_name = next((name for mid, name, _ in AVAILABLE_MODELS if mid == model_id), "Unknown")
-                return f"*Model changed to {model_name}. Will load on next generation.*"
+                return format_status(f"Model changed to {model_name}. Will load on next generation.", "info")
             except Exception as e:
-                return f"*Error changing model: {str(e)}*"
+                return format_status(f"Error changing model: {str(e)}", "error")
 
         model_dropdown.change(
             fn=on_model_change,
@@ -1084,9 +1128,9 @@ def create_ui():
             try:
                 set_selected_language(language)
                 display_name = next((d for c, d in AVAILABLE_LANGUAGES if c == language), language)
-                return f"*Language set to {display_name}.*"
+                return format_status(f"Language set to {display_name}.", "success")
             except Exception as e:
-                return f"*Error changing language: {str(e)}*"
+                return format_status(f"Error changing language: {str(e)}", "error")
 
         language_dropdown.change(
             fn=on_language_change,
@@ -1097,13 +1141,13 @@ def create_ui():
         def on_save_settings(script):
             """Handle saving global default script."""
             if not script or not script.strip():
-                return "*Please enter a reference script.*", gr.update(), gr.update()
+                return format_status("Please enter a reference script.", "error"), gr.update(), gr.update()
 
             try:
                 set_default_script(script.strip())
-                return "*Settings saved successfully!*", script.strip(), script.strip()
+                return format_status("✓ Settings saved successfully!", "success"), script.strip(), script.strip()
             except Exception as e:
-                return f"*Error saving settings: {str(e)}*", gr.update(), gr.update()
+                return format_status(f"Error saving settings: {str(e)}", "error"), gr.update(), gr.update()
 
         save_settings_btn.click(
             fn=on_save_settings,
@@ -1115,21 +1159,21 @@ def create_ui():
             """Handle re-recording a voice."""
             if voice_id == GUEST_VOICE_ID:
                 return (
-                    "*Cannot re-record Quick Test voice. Create a new voice instead.*",
+                    format_status("Cannot re-record Quick Test voice. Create a new voice instead.", "error"),
                     gr.update(),  # Keep audio as-is
                     gr.update(),  # Keep preview unchanged
                 )
 
             if audio is None:
                 return (
-                    "*Please record your voice first.*",
+                    format_status("Please record your voice first.", "error"),
                     gr.update(),  # Keep audio as-is
                     gr.update(),  # Keep preview unchanged
                 )
 
             if not script or not script.strip():
                 return (
-                    "*Please enter a reference script.*",
+                    format_status("Please enter a reference script.", "error"),
                     gr.update(),  # Keep audio as-is
                     gr.update(),  # Keep preview unchanged
                 )
@@ -1148,19 +1192,19 @@ def create_ui():
                     preview_audio = get_voice_audio_path(voice_id)
 
                     return (
-                        f"*Voice updated for '{name}'! The voice now uses your new recording.*",
+                        format_status(f"✓ Voice updated for '{name}'! The voice now uses your new recording.", "success"),
                         gr.update(value=None),  # Clear the audio recorder
                         gr.update(value=preview_audio),  # Update preview
                     )
                 else:
                     return (
-                        "*Voice not found.*",
+                        format_status("Voice not found.", "error"),
                         gr.update(),  # Keep audio as-is
                         gr.update(),  # Keep preview unchanged
                     )
             except Exception as e:
                 return (
-                    f"*Error updating voice: {str(e)}*",
+                    format_status(f"Error updating voice: {str(e)}", "error"),
                     gr.update(),  # Keep audio as-is
                     gr.update(),  # Keep preview unchanged
                 )
@@ -1178,11 +1222,11 @@ def create_ui():
                     result = clone_voice_guest(audio, text, guest_ref_script)
                 else:
                     result = generate_from_voice(voice_id, text)
-                return result, "*Status: Generation complete!*"
+                return result, format_status("✓ Generation complete!", "success")
             except gr.Error as e:
                 raise e
             except Exception as e:
-                return None, f"*Status: Error - {str(e)}*"
+                return None, format_status(f"Error: {str(e)}", "error")
 
         generate_btn.click(
             fn=on_generate,
