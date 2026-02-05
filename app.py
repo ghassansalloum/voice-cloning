@@ -528,34 +528,48 @@ def create_ui():
 }
 
 .gradio-container h1 {
-    font-family: 'JetBrains Mono', monospace !important;
-    font-weight: 800 !important;
-    font-size: 28px !important;
-    letter-spacing: -0.02em !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 900 !important;
+    font-size: 48px !important;
+    letter-spacing: -0.03em !important;
     color: var(--text-primary) !important;
-    margin-bottom: 16px !important;
+    margin-bottom: 24px !important;
+    padding-bottom: 16px !important;
+    border-bottom: 3px solid var(--primary-green) !important;
+    position: relative !important;
+}
+
+.gradio-container h1::after {
+    content: "" !important;
+    position: absolute !important;
+    bottom: -3px !important;
+    left: 0 !important;
+    width: 60px !important;
+    height: 3px !important;
+    background: var(--green-hover) !important;
+    box-shadow: 0 0 12px var(--primary-green) !important;
 }
 
 .gradio-container h2 {
-    font-family: 'JetBrains Mono', monospace !important;
+    font-family: 'Inter', sans-serif !important;
     font-weight: 800 !important;
-    font-size: 20px !important;
+    font-size: 28px !important;
     letter-spacing: -0.02em !important;
-    color: var(--text-primary) !important;
+    color: var(--primary-green) !important;
     margin-bottom: 16px !important;
 }
 
 .gradio-container h3 {
-    font-family: 'JetBrains Mono', monospace !important;
+    font-family: 'Inter', sans-serif !important;
     font-weight: 700 !important;
-    font-size: 16px !important;
+    font-size: 18px !important;
     color: var(--text-primary) !important;
     margin-bottom: 12px !important;
 }
 
 .gradio-container label {
-    font-weight: 500 !important;
-    font-size: 13px !important;
+    font-weight: 600 !important;
+    font-size: 11px !important;
     color: var(--text-secondary) !important;
     text-transform: uppercase !important;
     letter-spacing: 0.08em !important;
@@ -563,12 +577,14 @@ def create_ui():
 
 .gradio-container p,
 .gradio-container .markdown {
-    color: var(--text-primary) !important;
+    font-size: 15px !important;
+    line-height: 1.6 !important;
+    color: var(--text-secondary) !important;
 }
 
 .gradio-container .markdown ul,
 .gradio-container .markdown li {
-    color: var(--text-primary) !important;
+    color: var(--text-secondary) !important;
 }
 
 /* Button hierarchy */
@@ -831,25 +847,6 @@ def create_ui():
     font-size: 16px !important;
     padding: 16px 32px !important;
     font-weight: 600 !important;
-}
-
-/* Section headers */
-.gradio-container h2 {
-    padding-bottom: 8px !important;
-    border-bottom: 2px solid var(--primary-green) !important;
-    margin-bottom: 20px !important;
-    position: relative !important;
-}
-
-.gradio-container h2::after {
-    content: "" !important;
-    position: absolute !important;
-    bottom: -2px !important;
-    left: 0 !important;
-    width: 80px !important;
-    height: 2px !important;
-    background: linear-gradient(90deg, var(--green-hover), transparent) !important;
-    box-shadow: 0 0 8px var(--primary-green) !important;
 }
 
 /* Recording tips panel rotation */
