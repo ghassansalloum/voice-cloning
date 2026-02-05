@@ -1152,30 +1152,74 @@ def create_ui():
 
 
 def migrate_profiles_to_voices():
-    """One-time migration from profiles/ to voices/ directory."""
+    """One-time migration from profiles/ to voices/ directory with safety checks."""
     old_dir = Path(__file__).parent / "profiles"
     new_dir = Path(__file__).parent / "voices"
+    migration_marker = new_dir / ".migrated"
 
-    if old_dir.exists() and not new_dir.exists():
+    # Skip if already migrated
+    if migration_marker.exists():
+        return
+
+    # Skip if old directory doesn't exist
+    if not old_dir.exists():
+        # Create new directory if it doesn't exist
+        new_dir.mkdir(exist_ok=True)
+        return
+
+    # If new_dir exists and has voices, assume migration done
+    if new_dir.exists() and any(new_dir.iterdir()):
+        print("[Migration] Voices directory already populated, marking as migrated")
+        migration_marker.touch()
+        return
+
+    try:
         import shutil
-        shutil.move(str(old_dir), str(new_dir))
-        print("[Migration] Moved profiles/ to voices/")
 
-        # Also update the JSON structure
-        if VOICES_INDEX.exists():
+        print("[Migration] Starting migration from profiles/ to voices/...")
+
+        # Use copy pattern for safety
+        if new_dir.exists():
+            shutil.rmtree(new_dir)
+
+        shutil.copytree(str(old_dir), str(new_dir))
+        print("[Migration] Copied profiles/ to voices/")
+
+        # Update JSON structure from "profiles" to "voices"
+        old_json = old_dir / "profiles.json"
+        new_json = new_dir / "voices.json"
+
+        if old_json.exists() or new_json.exists():
+            json_path = new_json if new_json.exists() else old_json
             try:
-                with open(VOICES_INDEX, "r") as f:
+                with open(json_path, "r") as f:
                     data = json.load(f)
 
-                # Rename "profiles" key to "voices"
                 if "profiles" in data and "voices" not in data:
                     data["voices"] = data.pop("profiles")
 
-                    with open(VOICES_INDEX, "w") as f:
+                    with open(new_dir / "voices.json", "w") as f:
                         json.dump(data, f, indent=2)
                     print("[Migration] Updated JSON structure: profiles -> voices")
+
             except (json.JSONDecodeError, IOError) as e:
                 print(f"[Migration] Warning: Could not update JSON structure: {e}")
+
+        # Mark migration as complete
+        migration_marker.touch()
+        print("[Migration] Migration successful!")
+        print("[Migration] Old data preserved in profiles/ - you can manually delete it after verification")
+
+    except Exception as e:
+        print(f"[Migration] Error during migration: {e}")
+        print("[Migration] Old data preserved in profiles/ directory")
+        # Clean up partial migration
+        if new_dir.exists():
+            try:
+                import shutil
+                shutil.rmtree(new_dir)
+            except Exception:
+                pass
 
 
 if __name__ == "__main__":
