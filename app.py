@@ -233,11 +233,11 @@ def get_voice_data(voice_id: str) -> tuple[str, str] | None:
     Returns:
         Tuple of (audio_path, ref_script), or None if not found
     """
-    audio_path = VOICES_DIR / voice_id / "audio.wav"
-    if not audio_path.exists():
+    audio_path_str = get_voice_audio_path(voice_id)
+    if audio_path_str is None:
         return None
     ref_script = get_voice_script(voice_id)
-    return str(audio_path), ref_script
+    return audio_path_str, ref_script
 
 
 def get_voice_audio_path(voice_id: str) -> str | None:
@@ -941,21 +941,27 @@ def create_ui():
         def on_save_voice(name, audio, script):
             """Handle new voice creation."""
             if not name or not name.strip():
+                current_updates = on_voice_change(GUEST_VOICE_ID)
                 return (
                     "*Please enter a voice name.*",
                     gr.update(),  # dropdown stays same
+                    *current_updates
                 )
 
             if audio is None:
+                current_updates = on_voice_change(GUEST_VOICE_ID)
                 return (
                     "*Please record your voice first.*",
                     gr.update(),
+                    *current_updates
                 )
 
             if not script or not script.strip():
+                current_updates = on_voice_change(GUEST_VOICE_ID)
                 return (
                     "*Please enter a reference script.*",
                     gr.update(),
+                    *current_updates
                 )
 
             try:
@@ -966,20 +972,40 @@ def create_ui():
                 # Update dropdown choices
                 new_choices = get_voice_choices()
 
+                # Get all voice change updates for the newly created voice
+                voice_updates = on_voice_change(voice_id)
+
                 return (
                     f"*✓ Voice '{name}' saved successfully!*",
                     gr.update(choices=new_choices, value=voice_id),
+                    *voice_updates  # Include all outputs from on_voice_change
                 )
             except Exception as e:
+                # Keep current state on error
+                current_updates = on_voice_change(GUEST_VOICE_ID)
                 return (
                     f"*Error creating voice: {str(e)}*",
                     gr.update(),
+                    *current_updates
                 )
 
         save_voice_btn.click(
             fn=on_save_voice,
             inputs=[new_voice_name, new_voice_audio, new_voice_script],
-            outputs=[voice_status, voice_dropdown]
+            outputs=[
+                voice_status,
+                voice_dropdown,
+                current_voice_id,
+                voice_info,
+                recording_section,
+                voice_mode_info,
+                rerecord_script,
+                rerecord_voice_name,
+                rerecord_btn,
+                rerecord_status,
+                delete_confirm_text,
+                voice_preview_audio  # All outputs from on_voice_change
+            ]
         )
 
         def on_delete_confirm_change(voice_id, confirm_text):
@@ -1091,18 +1117,21 @@ def create_ui():
                 return (
                     "*Cannot re-record Quick Test voice. Create a new voice instead.*",
                     gr.update(),  # Keep audio as-is
+                    gr.update(),  # Keep preview unchanged
                 )
 
             if audio is None:
                 return (
                     "*Please record your voice first.*",
                     gr.update(),  # Keep audio as-is
+                    gr.update(),  # Keep preview unchanged
                 )
 
             if not script or not script.strip():
                 return (
                     "*Please enter a reference script.*",
                     gr.update(),  # Keep audio as-is
+                    gr.update(),  # Keep preview unchanged
                 )
 
             try:
@@ -1114,25 +1143,32 @@ def create_ui():
                     voices = load_voices()
                     voice = next((v for v in voices if v["id"] == voice_id), None)
                     name = voice["name"] if voice else "Unknown"
+
+                    # Get updated audio path for preview
+                    preview_audio = get_voice_audio_path(voice_id)
+
                     return (
                         f"*Voice updated for '{name}'! The voice now uses your new recording.*",
                         gr.update(value=None),  # Clear the audio recorder
+                        gr.update(value=preview_audio),  # Update preview
                     )
                 else:
                     return (
                         "*Voice not found.*",
                         gr.update(),  # Keep audio as-is
+                        gr.update(),  # Keep preview unchanged
                     )
             except Exception as e:
                 return (
                     f"*Error updating voice: {str(e)}*",
                     gr.update(),  # Keep audio as-is
+                    gr.update(),  # Keep preview unchanged
                 )
 
         rerecord_btn.click(
             fn=on_rerecord,
             inputs=[current_voice_id, rerecord_audio, rerecord_script],
-            outputs=[rerecord_status, rerecord_audio]
+            outputs=[rerecord_status, rerecord_audio, voice_preview_audio]  # Add voice_preview_audio
         )
 
         def on_generate(voice_id, audio, text, guest_ref_script):
