@@ -486,7 +486,7 @@ def format_status(message: str, status_type: str = "info") -> str:
 def check_microphone_status():
     """Provide guidance on microphone access."""
     return format_status(
-        "🎤 Ensure microphone permissions are enabled in your browser and system settings.",
+        "Ensure microphone permissions are enabled in your browser and system settings.",
         "info"
     )
 
@@ -785,9 +785,37 @@ def create_ui():
     margin: 20px 0 !important;
 }
 
-/* Sidebar specific */
+/* Sidebar styling - Green gradient overlay */
+.gradio-container > .row > .column:first-child {
+    position: relative !important;
+}
+
+.gradio-container > .row > .column:first-child::before {
+    content: "" !important;
+    position: absolute !important;
+    top: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 300px !important;
+    background: radial-gradient(circle at top right, rgba(29, 185, 84, 0.08) 0%, transparent 60%) !important;
+    pointer-events: none !important;
+    z-index: 0 !important;
+}
+
+.gradio-container > .row > .column:first-child > * {
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+/* Sidebar specific padding */
 .gradio-container .block:first-child > .form > .col:first-child {
     padding: 24px !important;
+}
+
+/* Main content max-width constraint */
+.gradio-container > .row > .column:last-child {
+    max-width: 1200px !important;
+    margin: 0 auto !important;
 }
 
 /* Status messages - Toast style with green */
@@ -1096,8 +1124,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 gr.Markdown("### Quick Actions")
 
                 with gr.Row():
-                    new_voice_btn = gr.Button("➕ New Voice", size="sm")
-                    manage_voices_btn = gr.Button("⚙️ Manage", size="sm")
+                    new_voice_btn = gr.Button("New Voice", size="sm")
+                    manage_voices_btn = gr.Button("Manage", size="sm")
 
                 # New Voice Section - Initially collapsed, opens on button click
                 with gr.Column(visible=False) as new_voice_section:
@@ -1116,7 +1144,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     )
 
                     with gr.Row():
-                        new_voice_mic_check_btn = gr.Button("🎤 Check Microphone", size="sm")
+                        new_voice_mic_check_btn = gr.Button("Check Microphone", size="sm")
                         new_voice_mic_status = gr.Markdown("")
 
                     new_voice_audio = gr.Audio(
@@ -1146,7 +1174,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     )
 
                     with gr.Row():
-                        rerecord_mic_check_btn = gr.Button("🎤 Check Microphone", size="sm")
+                        rerecord_mic_check_btn = gr.Button("Check Microphone", size="sm")
                         rerecord_mic_status = gr.Markdown("")
 
                     rerecord_audio = gr.Audio(
@@ -1177,7 +1205,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         close_manage_btn = gr.Button("Close", size="sm")
 
                 # Keyboard Shortcuts Accordion
-                with gr.Accordion("⌨️ Keyboard Shortcuts", open=False):
+                with gr.Accordion("Keyboard Shortcuts", open=False):
                     gr.Markdown("""
     - **⌘/Ctrl + Enter**: Generate voice
     - **Space**: Start/stop recording (when audio component focused)
@@ -1211,15 +1239,21 @@ document.addEventListener('DOMContentLoaded', function() {
             # Main Area - Voice Generation
             # ================================================================
             with gr.Column(scale=3):
+                # Waveform header placeholder (future: animated canvas)
+                gr.HTML("""
+<div style="height: 80px; margin-bottom: 24px; background: linear-gradient(90deg, #0D7A3A 0%, #1DB954 50%, #1ED760 100%); opacity: 0.3; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #B3B3B3; letter-spacing: 2px;">
+WAVEFORM VISUALIZATION (PLACEHOLDER)
+</div>
+""")
                 gr.Markdown("# Voice Cloning Studio")
-                gr.Markdown("Professional voice cloning on Apple Silicon with MLX")
+                gr.Markdown('<p style="color: var(--text-secondary); font-size: 16px; margin-top: -16px;">Professional voice cloning on Apple Silicon with MLX</p>')
 
                 # Show current voice info
                 voice_info = gr.Markdown("**Active Voice:** Quick Test (record new voice)")
 
                 # Recording Studio section (only for Quick Test mode)
                 with gr.Column(visible=True) as recording_section:
-                    gr.Markdown("## 🎙️ Recording Studio")
+                    gr.Markdown("## Recording Studio")
                     gr.Markdown("Record a voice sample to clone")
 
                     with gr.Row():
@@ -1246,7 +1280,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     gr.Markdown("### Record Your Voice")
 
                     with gr.Row():
-                        guest_mic_check_btn = gr.Button("🎤 Check Microphone", size="sm")
+                        guest_mic_check_btn = gr.Button("Check Microphone", size="sm")
                         guest_mic_status = gr.Markdown("")
 
                     audio_input = gr.Audio(
@@ -1262,7 +1296,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 )
 
                 # Generation Studio section (always visible)
-                gr.Markdown("## 🎬 Generation Studio")
+                gr.Markdown("## Generation Studio")
                 gr.Markdown("Generate speech in your cloned voice")
 
                 with gr.Row():
@@ -1281,7 +1315,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         - Language must match text
                         """)
 
-                generate_btn = gr.Button("🎵 Generate Voice (⌘+Enter)", variant="primary", size="lg", scale=2, elem_id="generate-button")
+                generate_btn = gr.Button("Generate Voice (⌘+Enter)", variant="primary", size="lg", scale=2, elem_id="generate-button")
                 gr.Markdown("*Generation typically takes 5-15 seconds depending on text length and model.*")
 
                 # Output Section
@@ -1374,7 +1408,7 @@ document.addEventListener('DOMContentLoaded', function() {
             is_guest = voice_id == GUEST_VOICE_ID
 
             if is_guest:
-                voice_text = "**Active Voice:** Quick Test (record new voice)"
+                voice_text = '<p style="font-size: 15px;"><strong>Active Voice:</strong> <span style="color: var(--primary-green);">Quick Test (record new voice)</span></p>'
                 script = get_default_script()
                 rerecord_name_text = "*Select a saved voice to re-record*"
                 preview_audio = None
@@ -1385,7 +1419,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 voices = load_voices()
                 voice = next((v for v in voices if v["id"] == voice_id), None)
                 name = voice["name"] if voice else "Unknown"
-                voice_text = f"**Active Voice:** {name}"
+                voice_text = f'<p style="font-size: 15px;"><strong>Active Voice:</strong> <span style="color: var(--primary-green);">{name}</span></p>'
                 script = get_voice_script(voice_id)
                 rerecord_name_text = f"**Re-recording:** {name}"
                 preview_audio = get_voice_audio_path(voice_id)
