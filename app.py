@@ -799,6 +799,20 @@ def create_ui():
     50% { opacity: 0.4; }
 }
 
+/* Primary action buttons - larger and more prominent */
+.gradio-container button[scale="2"] {
+    font-size: 16px !important;
+    padding: 16px 32px !important;
+    font-weight: 600 !important;
+}
+
+/* Section headers */
+.gradio-container h2 {
+    padding-bottom: 8px !important;
+    border-bottom: 2px solid var(--primary) !important;
+    margin-bottom: 20px !important;
+}
+
 /* Final polish */
 .gradio-container {
     -webkit-font-smoothing: antialiased !important;
@@ -971,50 +985,75 @@ def create_ui():
             # Main Area - Voice Generation
             # ================================================================
             with gr.Column(scale=3):
-                gr.Markdown("# Voice Cloning with Qwen3-TTS")
-                gr.Markdown("Clone your voice locally on Apple Silicon using MLX.")
+                gr.Markdown("# Voice Cloning Studio")
+                gr.Markdown("Professional voice cloning on Apple Silicon with MLX")
 
                 # Show current voice info
-                voice_info = gr.Markdown("**Current Voice:** Quick Test (record new voice)")
+                voice_info = gr.Markdown("**Active Voice:** Quick Test (record new voice)")
 
-                # Recording section (only for Quick Test mode)
+                # Recording Studio section (only for Quick Test mode)
                 with gr.Column(visible=True) as recording_section:
-                    gr.Markdown("### Step 1: Read This Script Aloud")
-                    guest_script = gr.Textbox(
-                        value=get_default_script(),
-                        label="Reference Script (editable - read this text clearly when recording)",
-                        lines=4,
-                        interactive=True
-                    )
+                    gr.Markdown("## 🎙️ Recording Studio")
+                    gr.Markdown("Record a voice sample to clone")
 
-                    gr.Markdown("### Step 2: Record Your Voice")
-                    gr.Markdown("*Click the microphone icon to start recording.*")
+                    with gr.Row():
+                        with gr.Column(scale=2):
+                            gr.Markdown("### Reference Script")
+                            gr.Markdown("Read this text clearly into your microphone:")
+                            guest_script = gr.Textbox(
+                                value=get_default_script(),
+                                label="Reference Text (editable)",
+                                lines=5,
+                                interactive=True
+                            )
+
+                        with gr.Column(scale=1):
+                            gr.Markdown("### Recording Tips")
+                            gr.Markdown("""
+                            - Speak naturally at normal pace
+                            - Keep consistent distance from mic
+                            - Record at least 10 seconds
+                            - Avoid background noise
+                            - Don't clip (peak < 0.95)
+                            """)
+
+                    gr.Markdown("### Record Your Voice")
                     audio_input = gr.Audio(
                         sources=["microphone"],
                         type="numpy",
-                        label="Record yourself reading the script above"
+                        label="Click microphone icon to start recording"
                     )
                     audio_input_feedback = gr.Markdown("")
 
                 # Voice mode message (when using saved voice)
                 voice_mode_info = gr.Markdown(
-                    "### Using Saved Voice\n*Your voice is already saved. Just enter text below and generate!*",
                     visible=False
                 )
 
-                # Text input and generation (always visible)
-                gr.Markdown("### Enter Text to Speak")
-                text_input = gr.Textbox(
-                    label="Text to Generate",
-                    placeholder="Enter the text you want spoken in your cloned voice...",
-                    lines=3
-                )
+                # Generation Studio section (always visible)
+                gr.Markdown("## 🎬 Generation Studio")
+                gr.Markdown("Generate speech in your cloned voice")
 
-                generate_btn = gr.Button("Generate Cloned Voice", variant="primary", size="lg")
+                with gr.Row():
+                    with gr.Column(scale=3):
+                        text_input = gr.Textbox(
+                            label="Text to Speak",
+                            placeholder="Enter any text to generate in your cloned voice...",
+                            lines=4
+                        )
 
-                # Output audio
-                gr.Markdown("### Generated Audio")
-                gr.Markdown("*Play or download your cloned voice audio.*")
+                    with gr.Column(scale=1):
+                        gr.Markdown("### Generation Tips")
+                        gr.Markdown("""
+                        - Natural punctuation helps
+                        - Shorter phrases = better quality
+                        - Language must match text
+                        """)
+
+                generate_btn = gr.Button("🎵 Generate Voice", variant="primary", size="lg", scale=2)
+
+                # Output Section
+                gr.Markdown("### Output")
                 audio_output = gr.Audio(
                     label="Generated Speech",
                     type="filepath",
@@ -1087,26 +1126,30 @@ def create_ui():
             is_guest = voice_id == GUEST_VOICE_ID
 
             if is_guest:
-                voice_text = "**Current Voice:** Quick Test (record new voice)"
+                voice_text = "**Active Voice:** Quick Test (record new voice)"
                 script = get_default_script()
                 rerecord_name_text = "*Select a saved voice to re-record*"
                 preview_audio = None
                 preview_visible = False
+                recording_studio_visible = True
+                voice_mode_visible = False
             else:
                 voices = load_voices()
                 voice = next((v for v in voices if v["id"] == voice_id), None)
                 name = voice["name"] if voice else "Unknown"
-                voice_text = f"**Current Voice:** {name}"
+                voice_text = f"**Active Voice:** {name}"
                 script = get_voice_script(voice_id)
                 rerecord_name_text = f"**Re-recording:** {name}"
                 preview_audio = get_voice_audio_path(voice_id)
                 preview_visible = True
+                recording_studio_visible = False
+                voice_mode_visible = False
 
             return (
                 voice_id,  # Update state
                 voice_text,  # Update voice info
-                gr.update(visible=is_guest),  # recording_section
-                gr.update(visible=not is_guest),  # voice_mode_info
+                gr.update(visible=recording_studio_visible),  # recording_section
+                gr.update(visible=voice_mode_visible),  # voice_mode_info
                 script,  # Update rerecord_script
                 rerecord_name_text,  # Update rerecord_voice_name
                 gr.update(interactive=not is_guest),  # Enable/disable rerecord_btn
