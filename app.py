@@ -601,6 +601,44 @@ def create_ui():
     text-overflow: clip !important;
 }
 
+/* Smooth transitions */
+.gradio-container .accordion {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.gradio-container .accordion[open] {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Accordion content fade-in */
+.gradio-container .accordion > div {
+    animation: fadeIn 0.2s ease-in-out !important;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Button press animation */
+.gradio-container button:active {
+    transform: translateY(0) !important;
+    box-shadow: none !important;
+}
+
+/* Keyboard focus states */
+.gradio-container button:focus-visible,
+.gradio-container .accordion summary:focus-visible {
+    outline: 2px solid var(--primary) !important;
+    outline-offset: 2px !important;
+}
+
 /* Spacing */
 .gradio-container hr {
     border: none !important;
