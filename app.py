@@ -546,6 +546,21 @@ def create_ui():
     color: var(--text-primary) !important;
 }
 
+/* Danger zone accordion */
+.gradio-container .accordion.danger {
+    border-color: var(--danger) !important;
+    background: rgba(255, 59, 48, 0.05) !important;
+}
+
+.gradio-container .accordion.danger summary {
+    color: var(--danger) !important;
+}
+
+.gradio-container .accordion.danger:hover {
+    border-color: var(--danger) !important;
+    box-shadow: 0 2px 8px rgba(255, 59, 48, 0.2) !important;
+}
+
 /* Form inputs */
 .gradio-container input[type="text"],
 .gradio-container textarea,
@@ -680,9 +695,17 @@ def create_ui():
                 gr.Markdown("---")
 
                 # Delete Profile Section
-                with gr.Accordion("Delete Profile", open=False):
-                    gr.Markdown("*Select a profile above, then click delete.*")
-                    delete_profile_btn = gr.Button("Delete Selected Profile", variant="stop")
+                with gr.Accordion("Delete Profile", open=False, elem_classes=["danger"]):
+                    gr.Markdown("**⚠️ This action cannot be undone.**")
+                    gr.Markdown("Type the exact profile name below to confirm deletion:")
+
+                    delete_confirm_text = gr.Textbox(
+                        label="Profile name",
+                        placeholder="Type profile name to enable delete",
+                        interactive=True
+                    )
+
+                    delete_profile_btn = gr.Button("Delete Selected Profile", variant="stop", interactive=False)
                     delete_status = gr.Markdown("")
 
             # ================================================================
@@ -769,12 +792,13 @@ def create_ui():
                 rerecord_name_text,  # Update rerecord_profile_name
                 gr.update(interactive=not is_guest),  # Enable/disable rerecord_btn
                 "",  # Clear rerecord_status
+                "",  # Reset delete confirmation text
             )
 
         profile_dropdown.change(
             fn=on_profile_change,
             inputs=[profile_dropdown],
-            outputs=[current_profile_id, profile_info, recording_section, profile_mode_info, rerecord_script, rerecord_profile_name, rerecord_btn, rerecord_status]
+            outputs=[current_profile_id, profile_info, recording_section, profile_mode_info, rerecord_script, rerecord_profile_name, rerecord_btn, rerecord_status, delete_confirm_text]
         )
 
         def on_save_profile(name, audio, script):
@@ -821,6 +845,19 @@ def create_ui():
             outputs=[profile_status, profile_dropdown]
         )
 
+        def on_delete_confirm_change(profile_id, confirm_text):
+            """Enable delete button only if typed name matches selected profile."""
+            if profile_id == GUEST_PROFILE_ID:
+                return gr.update(interactive=False)
+
+            profiles = load_profiles()
+            profile = next((p for p in profiles if p["id"] == profile_id), None)
+
+            if profile and confirm_text.strip() == profile["name"]:
+                return gr.update(interactive=True)
+            else:
+                return gr.update(interactive=False)
+
         def on_delete_profile(profile_id):
             """Handle profile deletion."""
             if profile_id == GUEST_PROFILE_ID:
@@ -828,6 +865,7 @@ def create_ui():
                     "*Cannot delete Guest profile.*",
                     gr.update(),
                     GUEST_PROFILE_ID,
+                    "",  # Reset text field
                 )
 
             profiles = load_profiles()
@@ -840,18 +878,26 @@ def create_ui():
                     f"*Profile '{name}' deleted.*",
                     gr.update(choices=new_choices, value=GUEST_PROFILE_ID),
                     GUEST_PROFILE_ID,
+                    "",  # Reset text field
                 )
             else:
                 return (
                     "*Profile not found.*",
                     gr.update(),
                     profile_id,
+                    "",  # Reset text field
                 )
+
+        delete_confirm_text.change(
+            fn=on_delete_confirm_change,
+            inputs=[current_profile_id, delete_confirm_text],
+            outputs=[delete_profile_btn]
+        )
 
         delete_profile_btn.click(
             fn=on_delete_profile,
             inputs=[current_profile_id],
-            outputs=[delete_status, profile_dropdown, current_profile_id]
+            outputs=[delete_status, profile_dropdown, current_profile_id, delete_confirm_text]
         )
 
         def on_model_change(model_id):
@@ -994,7 +1040,7 @@ def create_ui():
         app.load(
             fn=on_page_load,
             inputs=[profile_dropdown],
-            outputs=[profile_dropdown, current_profile_id, profile_info, recording_section, profile_mode_info, rerecord_script, rerecord_profile_name, rerecord_btn, rerecord_status]
+            outputs=[profile_dropdown, current_profile_id, profile_info, recording_section, profile_mode_info, rerecord_script, rerecord_profile_name, rerecord_btn, rerecord_status, delete_confirm_text]
         )
 
     return app
