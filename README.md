@@ -1,15 +1,45 @@
 # Voice Cloning with Qwen3-TTS
 
-A local voice cloning application using Qwen3-TTS via MLX-Audio with a Gradio web interface. Runs entirely on your Mac with Apple Silicon.
+Professional voice cloning application for Apple Silicon using MLX.
 
 ## Features
 
-- **Voice Profiles**: Save and manage multiple voice profiles for quick reuse
-- **Guest Mode**: Try voice cloning without creating a profile
-- **Multi-Language Support**: Generate speech in English or French (cross-lingual cloning supported)
-- **Customizable Scripts**: Edit the reference script used for voice capture
-- **Re-record Profiles**: Update existing profiles with new recordings
-- **Local Processing**: All processing happens on your device
+- 🎙️ **Recording Studio**: Record voice samples with real-time validation
+- 🎵 **Voice Library**: Save and manage multiple voice profiles
+- 🎬 **Generation Studio**: Generate speech in any saved voice
+- ⚡ **Quick Test Mode**: Try voice cloning without saving
+- 🌍 **Multi-language**: Support for English and French
+- 🎨 **Professional UI**: Clean, accessible interface with keyboard shortcuts
+
+## Quick Start
+
+1. **Select or Record a Voice**
+   - Choose "Quick Test" to try without saving
+   - Or click "➕ New Voice" to create a saved voice
+
+2. **Record Voice Sample** (Quick Test mode)
+   - Read the provided script into your microphone
+   - Record at least 10 seconds for best quality
+   - System will validate recording quality
+
+3. **Generate Speech**
+   - Enter any text in the Generation Studio
+   - Click "Generate Voice" or press ⌘+Enter
+   - Play or download the generated audio
+
+## Keyboard Shortcuts
+
+- **⌘/Ctrl + Enter**: Generate voice
+- **Space**: Start/stop recording (when audio focused)
+- **Tab**: Navigate controls
+
+## Voice Recording Tips
+
+- Speak naturally at normal pace
+- Keep consistent distance from microphone
+- Avoid background noise
+- Don't clip audio (keep peak < 0.95)
+- Record at least 10 seconds for best results
 
 ## Requirements
 
@@ -55,34 +85,12 @@ python app.py
 
 2. Open your browser to `http://127.0.0.1:7860`
 
-### Guest Mode (Quick Start)
+## Technical Details
 
-1. Read the reference script aloud and record your voice
-2. Enter the text you want spoken in your cloned voice
-3. Click "Generate Cloned Voice"
-4. Play or download the generated audio
-
-### Using Voice Profiles
-
-1. **Create a Profile**: Open "Create New Profile" in the sidebar, enter a name, record your voice, and click "Save Profile"
-2. **Select a Profile**: Use the dropdown to switch between saved profiles
-3. **Generate Speech**: With a profile selected, just enter text and generate - no recording needed
-4. **Re-record**: Open "Re-record Profile" to update a profile's voice with a new recording
-5. **Delete**: Open "Delete Profile" to remove a saved profile
-
-### Settings
-
-- **Model Selection**: Choose between different model sizes (0.6B 4-bit for speed, 0.6B bf16 for balance, 1.7B 4-bit for quality)
-- **Language**: Select the output language (English or French). Cross-lingual cloning is supported - you can record in English and generate French speech.
-- **Global Default Script**: Customize the reference script used for Guest mode and new profiles
-
-## Notes
-
-- **First run**: The model will be downloaded and cached automatically
-- **Models**: Multiple Qwen3-TTS models available (0.6B and 1.7B variants)
-- **Sample rate**: 24000 Hz
-- **Recording tips**: Speak clearly in a quiet environment for best results
-- **Profile storage**: Profiles are saved in the `profiles/` directory
+- Models: Qwen3-TTS (0.6B-4bit, 0.6B-bf16, 1.7B-4bit)
+- Sample Rate: 24kHz
+- Framework: MLX for Apple Silicon
+- UI: Gradio 4.x
 
 ## Troubleshooting
 
