@@ -461,6 +461,96 @@ def create_ui():
     text-transform: uppercase !important;
     letter-spacing: 0.05em !important;
 }
+
+/* Button hierarchy */
+.gradio-container button {
+    font-weight: 500 !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease !important;
+    border: 1px solid var(--border) !important;
+}
+
+.gradio-container button.primary {
+    background: var(--primary) !important;
+    color: white !important;
+    border-color: var(--primary) !important;
+}
+
+.gradio-container button.primary:hover {
+    background: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2) !important;
+}
+
+.gradio-container button.stop {
+    background: var(--danger) !important;
+    color: white !important;
+    border-color: var(--danger) !important;
+}
+
+.gradio-container button.stop:hover {
+    background: var(--danger-hover) !important;
+    border-color: var(--danger-hover) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2) !important;
+}
+
+.gradio-container button:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+}
+
+/* Accordion hierarchy */
+.gradio-container .accordion {
+    border: 1px solid var(--border) !important;
+    border-radius: 8px !important;
+    margin-bottom: 12px !important;
+    transition: all 0.2s ease !important;
+}
+
+.gradio-container .accordion:hover {
+    border-color: var(--primary) !important;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1) !important;
+}
+
+.gradio-container .accordion summary {
+    font-weight: 600 !important;
+    padding: 12px 16px !important;
+    cursor: pointer !important;
+    user-select: none !important;
+}
+
+/* Form inputs */
+.gradio-container input[type="text"],
+.gradio-container textarea,
+.gradio-container select {
+    border: 1px solid var(--border) !important;
+    border-radius: 6px !important;
+    padding: 10px 12px !important;
+    transition: all 0.2s ease !important;
+    font-family: 'DM Sans', sans-serif !important;
+}
+
+.gradio-container input[type="text"]:focus,
+.gradio-container textarea:focus,
+.gradio-container select:focus {
+    outline: none !important;
+    border-color: var(--border-focus) !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+}
+
+/* Spacing */
+.gradio-container hr {
+    border: none !important;
+    border-top: 1px solid var(--border) !important;
+    margin: 20px 0 !important;
+}
+
+/* Sidebar specific */
+.gradio-container .block:first-child > .form > .col:first-child {
+    padding: 24px !important;
+}
 """
 
     with gr.Blocks(title="Voice Cloning with Qwen3-TTS", css=custom_css) as app:
