@@ -802,11 +802,30 @@ def create_ui():
             outputs=[audio_output, status]
         )
 
-        # Trigger profile change on load to set initial visibility
+        def on_page_load(profile_id):
+            """Refresh dropdown choices and trigger profile change on page load."""
+            # Get fresh profile choices
+            fresh_choices = get_profile_choices()
+
+            # Ensure the selected profile still exists, otherwise default to guest
+            valid_ids = [pid for _, pid in fresh_choices]
+            if profile_id not in valid_ids:
+                profile_id = GUEST_PROFILE_ID
+
+            # Get profile change updates
+            profile_updates = on_profile_change(profile_id)
+
+            # Return dropdown update + profile change updates
+            return (
+                gr.update(choices=fresh_choices, value=profile_id),  # Update dropdown
+                *profile_updates  # Unpack profile change outputs
+            )
+
+        # Trigger dropdown refresh and profile change on load
         app.load(
-            fn=on_profile_change,
+            fn=on_page_load,
             inputs=[profile_dropdown],
-            outputs=[current_profile_id, profile_info, recording_section, profile_mode_info, rerecord_script, rerecord_profile_name, rerecord_btn, rerecord_status]
+            outputs=[profile_dropdown, current_profile_id, profile_info, recording_section, profile_mode_info, rerecord_script, rerecord_profile_name, rerecord_btn, rerecord_status]
         )
 
     return app
