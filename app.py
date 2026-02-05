@@ -416,25 +416,36 @@ def create_ui():
 /* Import professional fonts */
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Syne:wght@700;800&display=swap');
 
-/* Root variables */
+/* Root variables - Ableton-inspired dark theme */
 :root {
-    --primary: #2563eb;
-    --primary-hover: #1d4ed8;
-    --danger: #dc2626;
-    --danger-hover: #b91c1c;
-    --success: #16a34a;
-    --success-hover: #15803d;
-    --text-primary: #0f172a;
-    --text-secondary: #64748b;
-    --bg-primary: #ffffff;
-    --bg-secondary: #f8fafc;
-    --border: #e2e8f0;
-    --border-focus: #2563eb;
+    --primary: #ff764d;
+    --primary-hover: #ff9575;
+    --danger: #ff3b30;
+    --danger-hover: #ff6259;
+    --success: #30d158;
+    --success-hover: #5ae67f;
+    --text-primary: #e8e8e8;
+    --text-secondary: #a0a0a0;
+    --text-tertiary: #707070;
+    --bg-primary: #000000;
+    --bg-secondary: #1a1a1a;
+    --border: #2a2a2a;
+    --border-focus: #ff764d;
 }
 
 /* Typography */
 .gradio-container {
     font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    background-color: var(--bg-primary) !important;
+}
+
+.gradio-container h1 {
+    font-family: 'Syne', sans-serif !important;
+    font-weight: 800 !important;
+    font-size: 24px !important;
+    letter-spacing: -0.02em !important;
+    color: var(--text-primary) !important;
+    margin-bottom: 16px !important;
 }
 
 .gradio-container h2 {
@@ -462,17 +473,29 @@ def create_ui():
     letter-spacing: 0.05em !important;
 }
 
+.gradio-container p,
+.gradio-container .markdown {
+    color: var(--text-secondary) !important;
+}
+
 /* Button hierarchy */
 .gradio-container button {
     font-weight: 500 !important;
     border-radius: 8px !important;
     transition: all 0.2s ease !important;
     border: 1px solid var(--border) !important;
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}
+
+.gradio-container button:hover {
+    background: #252525 !important;
+    border-color: #3a3a3a !important;
 }
 
 .gradio-container button.primary {
     background: var(--primary) !important;
-    color: white !important;
+    color: #000000 !important;
     border-color: var(--primary) !important;
 }
 
@@ -480,7 +503,7 @@ def create_ui():
     background: var(--primary-hover) !important;
     border-color: var(--primary-hover) !important;
     transform: translateY(-1px) !important;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2) !important;
+    box-shadow: 0 4px 12px rgba(255, 118, 77, 0.4) !important;
 }
 
 .gradio-container button.stop {
@@ -493,11 +516,11 @@ def create_ui():
     background: var(--danger-hover) !important;
     border-color: var(--danger-hover) !important;
     transform: translateY(-1px) !important;
-    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2) !important;
+    box-shadow: 0 4px 12px rgba(255, 59, 48, 0.4) !important;
 }
 
 .gradio-container button:disabled {
-    opacity: 0.5 !important;
+    opacity: 0.3 !important;
     cursor: not-allowed !important;
 }
 
@@ -507,11 +530,12 @@ def create_ui():
     border-radius: 8px !important;
     margin-bottom: 12px !important;
     transition: all 0.2s ease !important;
+    background: var(--bg-secondary) !important;
 }
 
 .gradio-container .accordion:hover {
-    border-color: var(--primary) !important;
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1) !important;
+    border-color: #3a3a3a !important;
+    box-shadow: 0 2px 8px rgba(255, 118, 77, 0.1) !important;
 }
 
 .gradio-container .accordion summary {
@@ -519,6 +543,7 @@ def create_ui():
     padding: 12px 16px !important;
     cursor: pointer !important;
     user-select: none !important;
+    color: var(--text-primary) !important;
 }
 
 /* Form inputs */
@@ -530,6 +555,8 @@ def create_ui():
     padding: 10px 12px !important;
     transition: all 0.2s ease !important;
     font-family: 'DM Sans', sans-serif !important;
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
 }
 
 .gradio-container input[type="text"]:focus,
@@ -537,7 +564,8 @@ def create_ui():
 .gradio-container select:focus {
     outline: none !important;
     border-color: var(--border-focus) !important;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+    box-shadow: 0 0 0 3px rgba(255, 118, 77, 0.2) !important;
+    background: #222222 !important;
 }
 
 /* Spacing */
