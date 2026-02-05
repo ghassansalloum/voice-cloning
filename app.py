@@ -496,7 +496,7 @@ def create_ui():
 
     custom_css = """
 /* Import professional fonts */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Outfit:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 /* Root variables - Spotify-inspired green dominance */
 :root {
@@ -513,6 +513,8 @@ def create_ui():
     --warning: #FFA500;
     --error: #E22134;
     --info: #1ED760;
+    --border: #2a2a2a;
+    --border-focus: #1DB954;
 }
 
 /* Typography */
@@ -587,12 +589,12 @@ def create_ui():
 .gradio-container button.primary {
     background: linear-gradient(135deg, #ff5c28, #ff8552) !important;
     color: #000000 !important;
-    border-color: var(--primary) !important;
+    border-color: var(--primary-green) !important;
     box-shadow: 0 4px 16px rgba(255, 92, 40, 0.3) !important;
 }
 
 .gradio-container button.primary:hover {
-    border-color: var(--primary-glow) !important;
+    border-color: var(--green-hover) !important;
     transform: translateY(-2px) !important;
     box-shadow: 0 6px 20px rgba(255, 92, 40, 0.5) !important;
 }
@@ -600,12 +602,12 @@ def create_ui():
 .gradio-container button.stop {
     background: linear-gradient(135deg, #ff0055, #ff4488) !important;
     color: white !important;
-    border-color: var(--danger) !important;
+    border-color: var(--error) !important;
     box-shadow: 0 4px 16px rgba(255, 0, 85, 0.3) !important;
 }
 
 .gradio-container button.stop:hover {
-    border-color: var(--danger-glow) !important;
+    border-color: var(--error) !important;
     transform: translateY(-2px) !important;
     box-shadow: 0 6px 20px rgba(255, 0, 85, 0.5) !important;
 }
@@ -643,16 +645,16 @@ def create_ui():
 
 /* Danger zone accordion */
 .gradio-container .accordion.danger {
-    border-color: var(--danger) !important;
+    border-color: var(--error) !important;
     background: rgba(255, 59, 48, 0.05) !important;
 }
 
 .gradio-container .accordion.danger summary {
-    color: var(--danger) !important;
+    color: var(--error) !important;
 }
 
 .gradio-container .accordion.danger:hover {
-    border-color: var(--danger) !important;
+    border-color: var(--error) !important;
     box-shadow: 0 2px 8px rgba(255, 59, 48, 0.2) !important;
 }
 
@@ -731,7 +733,7 @@ def create_ui():
 /* Keyboard focus states */
 .gradio-container button:focus-visible,
 .gradio-container .accordion summary:focus-visible {
-    outline: 2px solid var(--primary) !important;
+    outline: 2px solid var(--primary-green) !important;
     outline-offset: 2px !important;
 }
 
@@ -783,16 +785,16 @@ def create_ui():
 /* Error status */
 .gradio-container .markdown.status-error {
     background: rgba(255, 0, 85, 0.15) !important;
-    border-left-color: var(--danger) !important;
-    color: var(--danger) !important;
+    border-left-color: var(--error) !important;
+    color: var(--error) !important;
     box-shadow: 0 4px 16px rgba(255, 0, 85, 0.2) !important;
 }
 
 /* Info status */
 .gradio-container .markdown.status-info {
     background: rgba(255, 92, 40, 0.15) !important;
-    border-left-color: var(--primary) !important;
-    color: var(--primary) !important;
+    border-left-color: var(--primary-green) !important;
+    color: var(--primary-green) !important;
     box-shadow: 0 4px 16px rgba(255, 92, 40, 0.2) !important;
 }
 
@@ -813,7 +815,7 @@ def create_ui():
     position: absolute !important;
     top: 12px !important;
     right: 12px !important;
-    color: var(--danger) !important;
+    color: var(--error) !important;
     font-weight: 700 !important;
     font-size: 12px !important;
     animation: pulse 1.5s ease-in-out infinite !important;
@@ -834,7 +836,7 @@ def create_ui():
 /* Section headers */
 .gradio-container h2 {
     padding-bottom: 8px !important;
-    border-bottom: 2px solid var(--primary) !important;
+    border-bottom: 2px solid var(--primary-green) !important;
     margin-bottom: 20px !important;
     position: relative !important;
 }
@@ -846,8 +848,8 @@ def create_ui():
     left: 0 !important;
     width: 80px !important;
     height: 2px !important;
-    background: linear-gradient(90deg, var(--primary-glow), transparent) !important;
-    box-shadow: 0 0 8px var(--primary) !important;
+    background: linear-gradient(90deg, var(--green-hover), transparent) !important;
+    box-shadow: 0 0 8px var(--primary-green) !important;
 }
 
 /* Recording tips panel rotation */
@@ -916,7 +918,7 @@ def create_ui():
 
 /* Recording state - prominent visual feedback */
 .gradio-container .audio-container:has(button[aria-label*="Stop"]) {
-    border: 3px solid var(--danger) !important;
+    border: 3px solid var(--error) !important;
     box-shadow:
         0 0 20px rgba(255, 0, 85, 0.6),
         0 0 40px rgba(255, 0, 85, 0.4),
@@ -939,7 +941,7 @@ def create_ui():
 
 /* Audio component labels during recording */
 .gradio-container .audio-container:has(button[aria-label*="Stop"]) label {
-    color: var(--danger) !important;
+    color: var(--error) !important;
     font-weight: 700 !important;
 }
 
@@ -949,7 +951,7 @@ def create_ui():
     top: -12px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    background: linear-gradient(135deg, var(--danger), var(--danger-glow)) !important;
+    background: linear-gradient(135deg, var(--error), var(--error)) !important;
     color: white !important;
     padding: 6px 16px !important;
     border-radius: 4px !important;
@@ -965,10 +967,10 @@ def create_ui():
 .gradio-container button.generating {
     background: repeating-linear-gradient(
         45deg,
-        var(--primary),
-        var(--primary) 10px,
-        var(--primary-hover) 10px,
-        var(--primary-hover) 20px
+        var(--primary-green),
+        var(--primary-green) 10px,
+        var(--green-hover) 10px,
+        var(--green-hover) 20px
     ) !important;
     background-size: 200% 200% !important;
     animation: loadingStripes 2s linear infinite !important;
