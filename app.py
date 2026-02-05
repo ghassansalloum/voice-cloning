@@ -240,6 +240,25 @@ def get_voice_data(voice_id: str) -> tuple[str, str] | None:
     return str(audio_path), ref_script
 
 
+def get_voice_audio_path(voice_id: str) -> str | None:
+    """
+    Get the audio file path for a voice.
+
+    Args:
+        voice_id: Voice ID
+
+    Returns:
+        Path to audio file, or None if not found
+    """
+    if voice_id == GUEST_VOICE_ID:
+        return None
+
+    audio_path = VOICES_DIR / voice_id / "audio.wav"
+    if not audio_path.exists():
+        return None
+    return str(audio_path)
+
+
 def update_voice_recording(voice_id: str, audio_data: np.ndarray, sample_rate: int, ref_script: str) -> bool:
     """
     Re-record a voice with new audio and script.
@@ -725,6 +744,14 @@ def create_ui():
                     interactive=True,
                 )
 
+                # Voice preview player
+                voice_preview_audio = gr.Audio(
+                    label="Voice Sample",
+                    type="filepath",
+                    interactive=False,
+                    visible=False
+                )
+
                 # Language selector (frequently changed, always visible)
                 language_dropdown = gr.Dropdown(
                     choices=get_language_choices(),
@@ -880,6 +907,8 @@ def create_ui():
                 voice_text = "**Current Voice:** Quick Test (record new voice)"
                 script = get_default_script()
                 rerecord_name_text = "*Select a saved voice to re-record*"
+                preview_audio = None
+                preview_visible = False
             else:
                 voices = load_voices()
                 voice = next((v for v in voices if v["id"] == voice_id), None)
@@ -887,6 +916,8 @@ def create_ui():
                 voice_text = f"**Current Voice:** {name}"
                 script = get_voice_script(voice_id)
                 rerecord_name_text = f"**Re-recording:** {name}"
+                preview_audio = get_voice_audio_path(voice_id)
+                preview_visible = True
 
             return (
                 voice_id,  # Update state
@@ -898,12 +929,13 @@ def create_ui():
                 gr.update(interactive=not is_guest),  # Enable/disable rerecord_btn
                 "",  # Clear rerecord_status
                 "",  # Reset delete confirmation text
+                gr.update(value=preview_audio, visible=preview_visible),  # voice_preview_audio
             )
 
         voice_dropdown.change(
             fn=on_voice_change,
             inputs=[voice_dropdown],
-            outputs=[current_voice_id, voice_info, recording_section, voice_mode_info, rerecord_script, rerecord_voice_name, rerecord_btn, rerecord_status, delete_confirm_text]
+            outputs=[current_voice_id, voice_info, recording_section, voice_mode_info, rerecord_script, rerecord_voice_name, rerecord_btn, rerecord_status, delete_confirm_text, voice_preview_audio]
         )
 
         def on_save_voice(name, audio, script):
@@ -1145,7 +1177,7 @@ def create_ui():
         app.load(
             fn=on_page_load,
             inputs=[voice_dropdown],
-            outputs=[voice_dropdown, current_voice_id, voice_info, recording_section, voice_mode_info, rerecord_script, rerecord_voice_name, rerecord_btn, rerecord_status, delete_confirm_text]
+            outputs=[voice_dropdown, current_voice_id, voice_info, recording_section, voice_mode_info, rerecord_script, rerecord_voice_name, rerecord_btn, rerecord_status, delete_confirm_text, voice_preview_audio]
         )
 
     return app
