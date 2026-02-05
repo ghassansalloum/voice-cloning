@@ -591,41 +591,45 @@ def create_ui():
 .gradio-container button {
     font-weight: 500 !important;
     border-radius: 8px !important;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-    border: 1px solid var(--border) !important;
-    background: var(--bg-secondary) !important;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    border: 1px solid var(--text-disabled) !important;
+    background: var(--bg-tertiary) !important;
     color: var(--text-primary) !important;
 }
 
 .gradio-container button:hover {
-    background: #252525 !important;
-    border-color: #3a3a3a !important;
+    background: #3E3E3E !important;
+    border-color: var(--primary-green) !important;
+    box-shadow: 0 0 16px rgba(29, 185, 84, 0.3) !important;
 }
 
 .gradio-container button.primary {
-    background: linear-gradient(135deg, #ff5c28, #ff8552) !important;
+    background: linear-gradient(135deg, var(--primary-green), var(--green-hover)) !important;
     color: #000000 !important;
     border-color: var(--primary-green) !important;
-    box-shadow: 0 4px 16px rgba(255, 92, 40, 0.3) !important;
+    border-radius: 24px !important;
+    padding: 16px 32px !important;
+    font-weight: 700 !important;
+    box-shadow: 0 8px 24px rgba(29, 185, 84, 0.4) !important;
 }
 
 .gradio-container button.primary:hover {
+    transform: translateY(-2px) scale(1.02) !important;
+    box-shadow: 0 12px 32px rgba(29, 185, 84, 0.6) !important;
     border-color: var(--green-hover) !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 6px 20px rgba(255, 92, 40, 0.5) !important;
 }
 
 .gradio-container button.stop {
-    background: linear-gradient(135deg, #ff0055, #ff4488) !important;
-    color: white !important;
-    border-color: var(--error) !important;
-    box-shadow: 0 4px 16px rgba(255, 0, 85, 0.3) !important;
+    background: var(--bg-tertiary) !important;
+    color: var(--error) !important;
+    border: 2px solid var(--error) !important;
 }
 
 .gradio-container button.stop:hover {
-    border-color: var(--error) !important;
+    background: linear-gradient(135deg, var(--error), #C41E3A) !important;
+    color: var(--text-primary) !important;
     transform: translateY(-2px) !important;
-    box-shadow: 0 6px 20px rgba(255, 0, 85, 0.5) !important;
+    box-shadow: 0 0 20px rgba(226, 33, 52, 0.5) !important;
 }
 
 .gradio-container button:disabled {
@@ -633,22 +637,27 @@ def create_ui():
     cursor: not-allowed !important;
 }
 
-/* Accordion hierarchy */
+/* Accordion hierarchy - Hardware panel style */
 .gradio-container .accordion {
-    border: 1px solid var(--border) !important;
+    border: 1px solid var(--text-disabled) !important;
     border-radius: 8px !important;
     margin-bottom: 12px !important;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-    background: var(--bg-secondary) !important;
+    background: var(--bg-tertiary) !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
 }
 
 .gradio-container .accordion:hover {
-    border-color: #3a3a3a !important;
+    border-color: var(--primary-green) !important;
     box-shadow:
         0 4px 16px rgba(0, 0, 0, 0.4),
-        0 0 20px rgba(255, 92, 40, 0.1) !important;
+        0 0 20px rgba(29, 185, 84, 0.2) !important;
     transform: translateY(-1px) !important;
+}
+
+.gradio-container .accordion[open] {
+    border-color: var(--primary-green) !important;
+    box-shadow: 0 4px 24px rgba(29, 185, 84, 0.3) !important;
 }
 
 .gradio-container .accordion summary {
@@ -657,6 +666,15 @@ def create_ui():
     cursor: pointer !important;
     user-select: none !important;
     color: var(--text-primary) !important;
+}
+
+/* LED indicator for open accordions */
+.gradio-container .accordion[open] summary::before {
+    content: "●" !important;
+    color: var(--primary-green) !important;
+    margin-right: 8px !important;
+    font-size: 12px !important;
+    animation: pulse 2s ease-in-out infinite !important;
 }
 
 /* Danger zone accordion */
@@ -674,34 +692,41 @@ def create_ui():
     box-shadow: 0 2px 8px rgba(255, 59, 48, 0.2) !important;
 }
 
-/* Form inputs */
+/* Form inputs - Dark theme */
 .gradio-container input[type="text"],
 .gradio-container textarea,
 .gradio-container select {
-    border: 1px solid var(--border) !important;
+    border: 1px solid var(--text-disabled) !important;
     border-radius: 6px !important;
-    padding: 10px 12px !important;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-    font-family: 'Outfit', sans-serif !important;
-    background: var(--bg-secondary) !important;
+    padding: 12px 16px !important;
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    font-family: 'Inter', sans-serif !important;
+    background: var(--bg-tertiary) !important;
     color: var(--text-primary) !important;
+    font-size: 15px !important;
 }
 
 .gradio-container input[type="text"]:focus,
 .gradio-container textarea:focus,
 .gradio-container select:focus {
     outline: none !important;
-    border-color: var(--border-focus) !important;
-    box-shadow: 0 0 0 3px rgba(255, 118, 77, 0.2) !important;
-    background: #222222 !important;
+    border-color: var(--primary-green) !important;
+    box-shadow: 0 0 0 3px rgba(29, 185, 84, 0.2) !important;
+    background: var(--bg-secondary) !important;
 }
 
-/* Audio components */
+.gradio-container input[type="text"]::placeholder,
+.gradio-container textarea::placeholder {
+    color: var(--text-disabled) !important;
+}
+
+/* Audio components - Custom styled */
 .gradio-container .audio-container,
 .gradio-container .audio-wrapper {
-    background: var(--bg-secondary) !important;
-    border: 1px solid var(--border) !important;
-    border-radius: 8px !important;
+    background: var(--bg-tertiary) !important;
+    border: 1px solid var(--text-disabled) !important;
+    border-radius: 12px !important;
+    padding: 20px !important;
 }
 
 .gradio-container .audio-container span,
@@ -741,8 +766,8 @@ def create_ui():
 
 /* Button press animation */
 .gradio-container button:active {
-    transform: translateY(0) scale(0.96) !important;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4) !important;
+    transform: translateY(1px) scale(0.98) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
     transition: all 0.1s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
@@ -765,7 +790,7 @@ def create_ui():
     padding: 24px !important;
 }
 
-/* Status messages - Toast style */
+/* Status messages - Toast style with green */
 .gradio-container .markdown.status-message {
     display: block !important;
     padding: 16px 20px !important;
@@ -790,35 +815,35 @@ def create_ui():
     }
 }
 
-/* Success status */
+/* Success status - Green */
 .gradio-container .markdown.status-success {
-    background: rgba(0, 255, 136, 0.15) !important;
+    background: rgba(29, 185, 84, 0.15) !important;
     border-left-color: var(--success) !important;
     color: var(--success) !important;
-    box-shadow: 0 4px 16px rgba(0, 255, 136, 0.2) !important;
+    box-shadow: 0 4px 16px rgba(29, 185, 84, 0.2) !important;
 }
 
 /* Error status */
 .gradio-container .markdown.status-error {
-    background: rgba(255, 0, 85, 0.15) !important;
+    background: rgba(226, 33, 52, 0.15) !important;
     border-left-color: var(--error) !important;
     color: var(--error) !important;
-    box-shadow: 0 4px 16px rgba(255, 0, 85, 0.2) !important;
+    box-shadow: 0 4px 16px rgba(226, 33, 52, 0.2) !important;
 }
 
-/* Info status */
+/* Info status - Green */
 .gradio-container .markdown.status-info {
-    background: rgba(255, 92, 40, 0.15) !important;
-    border-left-color: var(--primary-green) !important;
-    color: var(--primary-green) !important;
-    box-shadow: 0 4px 16px rgba(255, 92, 40, 0.2) !important;
+    background: rgba(29, 185, 84, 0.15) !important;
+    border-left-color: var(--info) !important;
+    color: var(--info) !important;
+    box-shadow: 0 4px 16px rgba(29, 185, 84, 0.2) !important;
 }
 
 /* Warning status */
 .gradio-container .markdown.status-warning {
-    background: rgba(255, 204, 0, 0.15) !important;
-    border-left-color: #ffcc00 !important;
-    color: #ffcc00 !important;
+    background: rgba(255, 165, 0, 0.15) !important;
+    border-left-color: var(--warning) !important;
+    color: var(--warning) !important;
 }
 
 /* Recording feedback */
@@ -890,7 +915,7 @@ def create_ui():
     margin-top: 24px !important;
 }
 
-/* Global recording overlay */
+/* Global recording overlay - Green tint */
 .gradio-container:has(.audio-container:has(button[aria-label*="Stop"]))::before {
     content: "" !important;
     position: fixed !important;
@@ -898,13 +923,13 @@ def create_ui():
     left: 0 !important;
     right: 0 !important;
     bottom: 0 !important;
-    background: radial-gradient(circle, transparent 0%, rgba(255, 0, 85, 0.05) 100%) !important;
+    background: radial-gradient(circle, transparent 0%, rgba(29, 185, 84, 0.05) 100%) !important;
     pointer-events: none !important;
-    animation: recordingPulse 2s ease-in-out infinite !important;
+    animation: recordingPulseGreen 2s ease-in-out infinite !important;
     z-index: 1 !important;
 }
 
-@keyframes recordingPulse {
+@keyframes recordingPulseGreen {
     0%, 100% {
         opacity: 0.5;
     }
@@ -913,32 +938,30 @@ def create_ui():
     }
 }
 
-/* Recording state - prominent visual feedback */
+/* Recording state - Green glow */
 .gradio-container .audio-container:has(button[aria-label*="Stop"]) {
-    border: 3px solid var(--error) !important;
+    border: 2px solid var(--primary-green) !important;
     box-shadow:
-        0 0 20px rgba(255, 0, 85, 0.6),
-        0 0 40px rgba(255, 0, 85, 0.4),
-        0 0 60px rgba(255, 0, 85, 0.2) !important;
-    animation: recordPulseEnhanced 1.5s ease-in-out infinite !important;
+        0 0 20px rgba(29, 185, 84, 0.6),
+        0 0 40px rgba(29, 185, 84, 0.4) !important;
+    animation: recordPulseGreen 1.5s ease-in-out infinite !important;
     position: relative !important;
     z-index: 2 !important;
 }
 
-@keyframes recordPulseEnhanced {
+@keyframes recordPulseGreen {
     0%, 100% {
-        box-shadow: 0 0 20px rgba(255, 0, 85, 0.6), 0 0 40px rgba(255, 0, 85, 0.4);
+        box-shadow: 0 0 20px rgba(29, 185, 84, 0.6), 0 0 40px rgba(29, 185, 84, 0.4);
         transform: scale(1);
     }
     50% {
-        box-shadow: 0 0 30px rgba(255, 0, 85, 0.8), 0 0 60px rgba(255, 0, 85, 0.6);
+        box-shadow: 0 0 30px rgba(29, 185, 84, 0.8), 0 0 60px rgba(29, 185, 84, 0.6);
         transform: scale(1.005);
     }
 }
 
-/* Audio component labels during recording */
 .gradio-container .audio-container:has(button[aria-label*="Stop"]) label {
-    color: var(--error) !important;
+    color: var(--primary-green) !important;
     font-weight: 700 !important;
 }
 
@@ -948,15 +971,15 @@ def create_ui():
     top: -12px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    background: linear-gradient(135deg, var(--error), var(--error)) !important;
-    color: white !important;
+    background: linear-gradient(135deg, var(--primary-green), var(--green-hover)) !important;
+    color: #000000 !important;
     padding: 6px 16px !important;
     border-radius: 4px !important;
     font-weight: 700 !important;
     font-size: 11px !important;
     letter-spacing: 0.1em !important;
     z-index: 10 !important;
-    box-shadow: 0 4px 12px rgba(255, 0, 85, 0.5) !important;
+    box-shadow: 0 4px 12px rgba(29, 185, 84, 0.5) !important;
     animation: pulse 1.5s ease-in-out infinite !important;
 }
 
@@ -976,6 +999,11 @@ def create_ui():
 @keyframes loadingStripes {
     0% { background-position: 0% 0%; }
     100% { background-position: 100% 100%; }
+}
+
+/* Hide Gradio footer */
+.gradio-container footer {
+    display: none !important;
 }
 </style>
 <script>
