@@ -627,7 +627,6 @@ def create_ui():
                     )
                     model_status = gr.Markdown("")
 
-                    gr.Markdown("---")
                     gr.Markdown("**Language**")
                     language_dropdown = gr.Dropdown(
                         choices=get_language_choices(),
@@ -637,7 +636,6 @@ def create_ui():
                     )
                     language_status = gr.Markdown("")
 
-                    gr.Markdown("---")
                     gr.Markdown("**Global Default Script**")
                     gr.Markdown("*This script is used for Guest mode and new profiles.*")
                     settings_script = gr.Textbox(
@@ -691,8 +689,6 @@ def create_ui():
 
                     rerecord_btn = gr.Button("Update Voice", variant="primary", interactive=False)
                     rerecord_status = gr.Markdown("")
-
-                gr.Markdown("---")
 
                 # Delete Profile Section
                 with gr.Accordion("Delete Profile", open=False, elem_classes=["danger"]):
