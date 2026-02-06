@@ -495,89 +495,119 @@ def create_ui():
     """Create and configure the Gradio interface."""
 
     custom_css = """
-/* Import professional fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
+/* Import Braun-inspired fonts - thin geometric sans-serif */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600&family=DIN+Condensed:wght@400;700&family=Roboto+Mono:wght@300;400&display=swap');
 
-/* Root variables - Spotify-inspired green dominance */
+/* Root variables - Braun/Dieter Rams light aesthetic */
 :root {
-    --primary-green: #1DB954;
-    --green-hover: #1ED760;
-    --green-dark: #0D7A3A;
-    --bg-primary: #121212;
-    --bg-secondary: #181818;
-    --bg-tertiary: #282828;
-    --text-primary: #FFFFFF;
-    --text-secondary: #B3B3B3;
-    --text-disabled: #535353;
-    --success: #1DB954;
+    /* Backgrounds - Cream/White palette */
+    --bg-primary: #E8E5DC;
+    --bg-secondary: #DDD9CE;
+    --bg-tertiary: #F2F0EA;
+    --surface-panel: #FFFFFF;
+
+    /* Text - High contrast on light */
+    --text-primary: #1A1A1A;
+    --text-secondary: #5A5A5A;
+    --text-disabled: #9E9E9E;
+    --text-label: #3A3A3A;
+
+    /* Accents - Orange primary, Mint success */
+    --accent-orange: #FF5722;
+    --accent-orange-hover: #E64A19;
+    --accent-mint: #7FC8A9;
+    --accent-blue: #5B9BD5;
+    --accent-red: #D84315;
+
+    /* Borders & Shadows */
+    --border-light: #CAC6BA;
+    --border-medium: #A8A29E;
+    --border-dark: #78716C;
+    --shadow-subtle: rgba(0, 0, 0, 0.08);
+    --shadow-medium: rgba(0, 0, 0, 0.12);
+
+    /* Hardware Elements */
+    --knob-body: #D4D1C6;
+    --knob-indicator: #FF5722;
+    --led-active: #FF5722;
+    --led-inactive: #CAC6BA;
+
+    /* Legacy aliases for compatibility */
+    --success: #7FC8A9;
     --warning: #FFA500;
-    --error: #E22134;
-    --info: #1ED760;
-    --border: #2a2a2a;
-    --border-focus: #1DB954;
+    --error: #D84315;
+    --info: #5B9BD5;
+    --border: #CAC6BA;
+    --border-focus: #FF5722;
 }
 
-/* Typography */
+/* Typography - Thin geometric sans-serif */
 .gradio-container {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
     background-color: var(--bg-primary) !important;
     background-image:
-        radial-gradient(circle at top right, rgba(29, 185, 84, 0.05) 0%, transparent 50%),
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E") !important;
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)' opacity='0.02'/%3E%3C/svg%3E") !important;
     background-attachment: fixed !important;
 }
 
 .gradio-container h1 {
-    font-family: 'Inter', sans-serif !important;
-    font-weight: 900 !important;
-    font-size: 48px !important;
-    letter-spacing: -0.03em !important;
+    font-family: 'DIN Condensed', 'Inter', sans-serif !important;
+    font-weight: 400 !important;
+    font-size: 32px !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
     color: var(--text-primary) !important;
-    margin-bottom: 24px !important;
-    padding-bottom: 16px !important;
-    border-bottom: 3px solid var(--primary-green) !important;
+    margin-bottom: 8px !important;
+    padding-bottom: 8px !important;
+    border-bottom: 1px solid var(--border-medium) !important;
     position: relative !important;
 }
 
-.gradio-container h1::after {
-    content: "" !important;
-    position: absolute !important;
-    bottom: -3px !important;
-    left: 0 !important;
-    width: 60px !important;
-    height: 3px !important;
-    background: var(--green-hover) !important;
-    box-shadow: 0 0 12px var(--primary-green) !important;
+/* Subtitle text after h1 */
+.gradio-container h1 + div p,
+.gradio-container h1 + * p {
+    font-size: 11px !important;
+    font-weight: 300 !important;
+    color: var(--text-secondary) !important;
+    margin-top: 4px !important;
+    margin-bottom: 16px !important;
+    line-height: 1.4 !important;
+    padding-right: 0 !important;
+    max-width: 100% !important;
 }
 
 .gradio-container h2 {
-    font-family: 'Inter', sans-serif !important;
-    font-weight: 800 !important;
-    font-size: 28px !important;
-    letter-spacing: -0.02em !important;
-    color: var(--primary-green) !important;
+    font-family: 'DIN Condensed', 'Inter', sans-serif !important;
+    font-weight: 500 !important;
+    font-size: 16px !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+    color: var(--text-primary) !important;
     margin-bottom: 16px !important;
 }
 
 .gradio-container h3 {
     font-family: 'Inter', sans-serif !important;
-    font-weight: 700 !important;
-    font-size: 18px !important;
-    color: var(--text-primary) !important;
+    font-weight: 400 !important;
+    font-size: 12px !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+    color: var(--text-label) !important;
     margin-bottom: 12px !important;
 }
 
 .gradio-container label {
-    font-weight: 600 !important;
-    font-size: 11px !important;
+    font-weight: 400 !important;
+    font-size: 9px !important;
     color: var(--text-secondary) !important;
     text-transform: uppercase !important;
-    letter-spacing: 0.08em !important;
+    letter-spacing: 0.12em !important;
 }
 
 .gradio-container p,
 .gradio-container .markdown {
-    font-size: 15px !important;
+    font-size: 13px !important;
+    font-weight: 300 !important;
     line-height: 1.6 !important;
     color: var(--text-secondary) !important;
 }
@@ -587,49 +617,56 @@ def create_ui():
     color: var(--text-secondary) !important;
 }
 
-/* Button hierarchy */
+/* Orange bullet points */
+.gradio-container .markdown li::marker {
+    color: var(--accent-orange) !important;
+}
+
+/* Button hierarchy - Tactile depth */
 .gradio-container button {
-    font-weight: 500 !important;
-    border-radius: 8px !important;
-    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-    border: 1px solid var(--text-disabled) !important;
-    background: var(--bg-tertiary) !important;
+    font-weight: 400 !important;
+    border-radius: 4px !important;
+    transition: all 0.15s ease-out !important;
+    border: 1px solid var(--border-medium) !important;
+    background: linear-gradient(180deg, #FFFFFF 0%, var(--bg-primary) 100%) !important;
     color: var(--text-primary) !important;
+    box-shadow: 0 1px 2px var(--shadow-subtle), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 
 .gradio-container button:hover {
-    background: #3E3E3E !important;
-    border-color: var(--primary-green) !important;
-    box-shadow: 0 0 16px rgba(29, 185, 84, 0.3) !important;
+    background: linear-gradient(180deg, #FFFFFF 0%, var(--bg-secondary) 100%) !important;
+    border-color: var(--accent-orange) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 4px var(--shadow-medium), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 
 .gradio-container button.primary {
-    background: linear-gradient(135deg, var(--primary-green), var(--green-hover)) !important;
-    color: #000000 !important;
-    border-color: var(--primary-green) !important;
+    background: linear-gradient(180deg, #FF6B35 0%, var(--accent-orange) 100%) !important;
+    color: #FFFFFF !important;
+    border-color: var(--accent-orange-hover) !important;
     border-radius: 24px !important;
-    padding: 16px 32px !important;
-    font-weight: 700 !important;
-    box-shadow: 0 8px 24px rgba(29, 185, 84, 0.4) !important;
+    padding: 12px 24px !important;
+    font-weight: 500 !important;
+    box-shadow: 0 2px 8px rgba(255, 87, 34, 0.3) !important;
 }
 
 .gradio-container button.primary:hover {
-    transform: translateY(-2px) scale(1.02) !important;
-    box-shadow: 0 12px 32px rgba(29, 185, 84, 0.6) !important;
-    border-color: var(--green-hover) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(255, 87, 34, 0.4) !important;
+    background: linear-gradient(180deg, #FF7043 0%, var(--accent-orange-hover) 100%) !important;
 }
 
 .gradio-container button.stop {
-    background: var(--bg-tertiary) !important;
-    color: var(--error) !important;
-    border: 2px solid var(--error) !important;
+    background: linear-gradient(180deg, #FFFFFF 0%, var(--bg-tertiary) 100%) !important;
+    color: var(--accent-red) !important;
+    border: 2px solid var(--accent-red) !important;
 }
 
 .gradio-container button.stop:hover {
-    background: linear-gradient(135deg, var(--error), #C41E3A) !important;
-    color: var(--text-primary) !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 0 20px rgba(226, 33, 52, 0.5) !important;
+    background: linear-gradient(180deg, #EF5350 0%, var(--accent-red) 100%) !important;
+    color: #FFFFFF !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 8px rgba(216, 67, 21, 0.3) !important;
 }
 
 .gradio-container button:disabled {
@@ -637,82 +674,94 @@ def create_ui():
     cursor: not-allowed !important;
 }
 
-/* Accordion hierarchy - Hardware panel style */
+.gradio-container button:active {
+    transform: translateY(0) !important;
+    box-shadow: inset 0 2px 4px var(--shadow-medium) !important;
+}
+
+/* Accordion hierarchy - Hardware panel with LED */
 .gradio-container .accordion {
-    border: 1px solid var(--text-disabled) !important;
-    border-radius: 8px !important;
+    border: 1px solid var(--border-medium) !important;
+    border-radius: 4px !important;
     margin-bottom: 12px !important;
-    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-    background: var(--bg-tertiary) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    transition: all 0.15s ease-out !important;
+    background: var(--bg-secondary) !important;
+    box-shadow: 0 1px 2px var(--shadow-subtle), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
 }
 
 .gradio-container .accordion:hover {
-    border-color: var(--primary-green) !important;
-    box-shadow:
-        0 4px 16px rgba(0, 0, 0, 0.4),
-        0 0 20px rgba(29, 185, 84, 0.2) !important;
-    transform: translateY(-1px) !important;
+    border-color: var(--border-dark) !important;
+    box-shadow: 0 2px 4px var(--shadow-medium), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
 }
 
 .gradio-container .accordion[open] {
-    border-color: var(--primary-green) !important;
-    box-shadow: 0 4px 24px rgba(29, 185, 84, 0.3) !important;
+    border-color: var(--border-dark) !important;
+    box-shadow: 0 2px 4px var(--shadow-medium), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
 }
 
 .gradio-container .accordion summary {
-    font-weight: 600 !important;
+    font-weight: 400 !important;
+    font-size: 12px !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
     padding: 12px 16px !important;
     cursor: pointer !important;
     user-select: none !important;
     color: var(--text-primary) !important;
 }
 
-/* LED indicator for open accordions */
+/* LED indicator - Orange when open, Gray outline when closed */
 .gradio-container .accordion[open] summary::before {
     content: "●" !important;
-    color: var(--primary-green) !important;
+    color: var(--led-active) !important;
     margin-right: 8px !important;
     font-size: 12px !important;
-    animation: pulse 2s ease-in-out infinite !important;
+}
+
+.gradio-container .accordion:not([open]) summary::before {
+    content: "○" !important;
+    color: var(--led-inactive) !important;
+    margin-right: 8px !important;
+    font-size: 12px !important;
 }
 
 /* Danger zone accordion */
 .gradio-container .accordion.danger {
-    border-color: var(--error) !important;
-    background: rgba(255, 59, 48, 0.05) !important;
+    border-color: var(--accent-red) !important;
+    background: rgba(216, 67, 21, 0.05) !important;
 }
 
 .gradio-container .accordion.danger summary {
-    color: var(--error) !important;
+    color: var(--accent-red) !important;
 }
 
 .gradio-container .accordion.danger:hover {
-    border-color: var(--error) !important;
-    box-shadow: 0 2px 8px rgba(255, 59, 48, 0.2) !important;
+    border-color: var(--accent-red) !important;
+    box-shadow: 0 2px 4px rgba(216, 67, 21, 0.15) !important;
 }
 
-/* Form inputs - Dark theme */
+/* Form inputs - Inset recessed style */
 .gradio-container input[type="text"],
 .gradio-container textarea,
 .gradio-container select {
-    border: 1px solid var(--text-disabled) !important;
-    border-radius: 6px !important;
+    border: 1px solid var(--border-light) !important;
+    border-radius: 3px !important;
     padding: 12px 16px !important;
-    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    transition: all 0.15s ease-out !important;
     font-family: 'Inter', sans-serif !important;
-    background: var(--bg-tertiary) !important;
+    background: var(--surface-panel) !important;
     color: var(--text-primary) !important;
-    font-size: 15px !important;
+    font-size: 13px !important;
+    font-weight: 300 !important;
+    box-shadow: inset 0 1px 2px var(--shadow-subtle) !important;
 }
 
 .gradio-container input[type="text"]:focus,
 .gradio-container textarea:focus,
 .gradio-container select:focus {
     outline: none !important;
-    border-color: var(--primary-green) !important;
-    box-shadow: 0 0 0 3px rgba(29, 185, 84, 0.2) !important;
-    background: var(--bg-secondary) !important;
+    border-color: var(--accent-orange) !important;
+    box-shadow: inset 0 1px 2px var(--shadow-subtle), 0 0 0 2px rgba(255, 87, 34, 0.15) !important;
 }
 
 .gradio-container input[type="text"]::placeholder,
@@ -720,13 +769,32 @@ def create_ui():
     color: var(--text-disabled) !important;
 }
 
-/* Audio components - Custom styled */
+/* Audio components - Speaker grille pattern */
 .gradio-container .audio-container,
 .gradio-container .audio-wrapper {
-    background: var(--bg-tertiary) !important;
-    border: 1px solid var(--text-disabled) !important;
-    border-radius: 12px !important;
+    background: var(--bg-secondary) !important;
+    border: 1px solid var(--border-medium) !important;
+    border-radius: 4px !important;
     padding: 20px !important;
+    box-shadow: 0 1px 3px var(--shadow-subtle), inset 0 0 0 1px rgba(255, 255, 255, 0.5) !important;
+    position: relative !important;
+}
+
+/* Speaker grille dot pattern overlay */
+.gradio-container .audio-container::after,
+.gradio-container .audio-wrapper::after {
+    content: "" !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background-image: radial-gradient(circle, var(--border-medium) 1px, transparent 1px) !important;
+    background-size: 8px 8px !important;
+    background-position: 4px 4px !important;
+    opacity: 0.3 !important;
+    pointer-events: none !important;
+    border-radius: 4px !important;
 }
 
 .gradio-container .audio-container span,
@@ -739,77 +807,33 @@ def create_ui():
     text-overflow: clip !important;
 }
 
-/* Smooth transitions */
-.gradio-container .accordion {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-.gradio-container .accordion[open] {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
-}
-
-/* Accordion content fade-in */
-.gradio-container .accordion > div {
-    animation: fadeIn 0.2s ease-in-out !important;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-8px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Button press animation */
-.gradio-container button:active {
-    transform: translateY(1px) scale(0.98) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
-    transition: all 0.1s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-}
-
-/* Keyboard focus states */
+/* Keyboard focus states - Orange outlines */
 .gradio-container button:focus-visible,
-.gradio-container .accordion summary:focus-visible {
-    outline: 2px solid var(--primary-green) !important;
+.gradio-container .accordion summary:focus-visible,
+.gradio-container input:focus-visible,
+.gradio-container textarea:focus-visible,
+.gradio-container select:focus-visible {
+    outline: 2px solid var(--accent-orange) !important;
     outline-offset: 2px !important;
 }
 
-/* Spacing */
+/* Spacing - 8px grid system */
 .gradio-container hr {
     border: none !important;
-    border-top: 1px solid var(--border) !important;
-    margin: 20px 0 !important;
+    border-top: 1px solid var(--border-light) !important;
+    margin: 16px 0 !important;
 }
 
-/* Sidebar styling - Green gradient overlay */
+/* Sidebar styling - Clean border */
 .gradio-container > .row > .column:first-child {
     position: relative !important;
-}
-
-.gradio-container > .row > .column:first-child::before {
-    content: "" !important;
-    position: absolute !important;
-    top: 0 !important;
-    right: 0 !important;
-    width: 100% !important;
-    height: 300px !important;
-    background: radial-gradient(circle at top right, rgba(29, 185, 84, 0.08) 0%, transparent 60%) !important;
-    pointer-events: none !important;
-    z-index: 0 !important;
-}
-
-.gradio-container > .row > .column:first-child > * {
-    position: relative !important;
-    z-index: 1 !important;
+    background: var(--bg-secondary) !important;
+    border-right: 1px solid var(--border-medium) !important;
 }
 
 /* Sidebar specific padding */
 .gradio-container .block:first-child > .form > .col:first-child {
-    padding: 24px !important;
+    padding: 16px !important;
 }
 
 /* Main content max-width constraint */
@@ -818,99 +842,89 @@ def create_ui():
     margin: 0 auto !important;
 }
 
-/* Status messages - Toast style with green */
+/* Status messages - Subtle border-left accent */
 .gradio-container .markdown.status-message {
     display: block !important;
-    padding: 16px 20px !important;
-    border-radius: 8px !important;
+    padding: 12px 16px !important;
+    border-radius: 3px !important;
     font-style: normal !important;
-    font-size: 14px !important;
-    font-weight: 600 !important;
-    margin: 12px 0 !important;
-    border-left: 4px solid transparent !important;
-    animation: slideIn 0.3s ease-out !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    font-size: 12px !important;
+    font-weight: 400 !important;
+    margin: 8px 0 !important;
+    border: 1px solid var(--border-medium) !important;
+    border-left: 3px solid transparent !important;
+    box-shadow: 0 1px 2px var(--shadow-subtle) !important;
 }
 
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Success status - Green */
+/* Success status - Mint */
 .gradio-container .markdown.status-success {
-    background: rgba(29, 185, 84, 0.15) !important;
-    border-left-color: var(--success) !important;
-    color: var(--success) !important;
-    box-shadow: 0 4px 16px rgba(29, 185, 84, 0.2) !important;
+    background: rgba(127, 200, 169, 0.1) !important;
+    border-left-color: var(--accent-mint) !important;
+    color: #2D5F4D !important;
 }
 
-/* Error status */
+/* Error status - Red */
 .gradio-container .markdown.status-error {
-    background: rgba(226, 33, 52, 0.15) !important;
-    border-left-color: var(--error) !important;
-    color: var(--error) !important;
-    box-shadow: 0 4px 16px rgba(226, 33, 52, 0.2) !important;
+    background: rgba(216, 67, 21, 0.1) !important;
+    border-left-color: var(--accent-red) !important;
+    color: #8B2E0B !important;
 }
 
-/* Info status - Green */
+/* Info status - Blue */
 .gradio-container .markdown.status-info {
-    background: rgba(29, 185, 84, 0.15) !important;
-    border-left-color: var(--info) !important;
-    color: var(--info) !important;
-    box-shadow: 0 4px 16px rgba(29, 185, 84, 0.2) !important;
+    background: rgba(91, 155, 213, 0.1) !important;
+    border-left-color: var(--accent-blue) !important;
+    color: #2E4A6D !important;
 }
 
-/* Warning status */
+/* Warning status - Orange */
 .gradio-container .markdown.status-warning {
-    background: rgba(255, 165, 0, 0.15) !important;
+    background: rgba(255, 165, 0, 0.1) !important;
     border-left-color: var(--warning) !important;
-    color: var(--warning) !important;
+    color: #8B5A00 !important;
 }
 
-/* Recording feedback */
+/* Recording feedback - Mechanical blink */
 .gradio-container .audio-container {
     position: relative !important;
 }
 
-.gradio-container .audio-container.recording::after {
+@keyframes mechanicalBlink {
+    0%, 50% { opacity: 1; }
+    50.01%, 100% { opacity: 0.3; }
+}
+
+/* Recording indicator - Orange LED */
+.gradio-container .audio-container:has(button[aria-label*="Stop"])::before {
     content: "● REC" !important;
     position: absolute !important;
     top: 12px !important;
     right: 12px !important;
-    color: var(--error) !important;
-    font-weight: 700 !important;
-    font-size: 12px !important;
-    animation: pulse 1.5s ease-in-out infinite !important;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.4; }
+    background: var(--accent-orange) !important;
+    color: #FFFFFF !important;
+    padding: 4px 8px !important;
+    border-radius: 2px !important;
+    font-weight: 500 !important;
+    font-size: 10px !important;
+    letter-spacing: 0.1em !important;
+    z-index: 10 !important;
+    animation: mechanicalBlink 1s step-end infinite !important;
 }
 
 /* Primary action buttons - larger and more prominent */
 .gradio-container button[scale="2"] {
-    font-size: 16px !important;
-    padding: 16px 32px !important;
-    font-weight: 600 !important;
+    font-size: 14px !important;
+    padding: 12px 24px !important;
+    font-weight: 500 !important;
 }
 
-/* Recording tips panel rotation */
+/* Recording tips panel - Clean, no rotation */
 .recording-tips-panel {
-    transform: rotate(-0.5deg) !important;
-    transform-origin: top center !important;
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-}
-
-.recording-tips-panel:hover {
-    transform: rotate(0deg) !important;
+    background: var(--surface-panel) !important;
+    border: 1px solid var(--border-light) !important;
+    border-radius: 3px !important;
+    box-shadow: inset 0 1px 2px var(--shadow-subtle) !important;
+    padding: 12px !important;
 }
 
 /* Final polish */
@@ -919,9 +933,9 @@ def create_ui():
     -moz-osx-font-smoothing: grayscale !important;
 }
 
-/* Improve overall spacing */
+/* Improve overall spacing - 8px grid */
 .gradio-container .block {
-    gap: 0 !important;
+    gap: 8px !important;
 }
 
 /* Clean up markdown spacing */
@@ -935,98 +949,24 @@ def create_ui():
 
 /* Vertical spacing between major sections */
 .gradio-container .accordion {
-    margin-top: 16px !important;
-    margin-bottom: 16px !important;
+    margin-top: 8px !important;
+    margin-bottom: 8px !important;
 }
 
 .gradio-container .accordion:first-of-type {
-    margin-top: 24px !important;
+    margin-top: 16px !important;
 }
 
-/* Global recording overlay - Green tint */
-.gradio-container:has(.audio-container:has(button[aria-label*="Stop"]))::before {
-    content: "" !important;
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    background: radial-gradient(circle, transparent 0%, rgba(29, 185, 84, 0.05) 100%) !important;
-    pointer-events: none !important;
-    animation: recordingPulseGreen 2s ease-in-out infinite !important;
-    z-index: 1 !important;
-}
-
-@keyframes recordingPulseGreen {
-    0%, 100% {
-        opacity: 0.5;
-    }
-    50% {
-        opacity: 1;
-    }
-}
-
-/* Recording state - Green glow */
+/* Recording state - Simple orange border */
 .gradio-container .audio-container:has(button[aria-label*="Stop"]) {
-    border: 2px solid var(--primary-green) !important;
-    box-shadow:
-        0 0 20px rgba(29, 185, 84, 0.6),
-        0 0 40px rgba(29, 185, 84, 0.4) !important;
-    animation: recordPulseGreen 1.5s ease-in-out infinite !important;
+    border: 2px solid var(--accent-orange) !important;
+    box-shadow: 0 2px 8px rgba(255, 87, 34, 0.3) !important;
     position: relative !important;
-    z-index: 2 !important;
-}
-
-@keyframes recordPulseGreen {
-    0%, 100% {
-        box-shadow: 0 0 20px rgba(29, 185, 84, 0.6), 0 0 40px rgba(29, 185, 84, 0.4);
-        transform: scale(1);
-    }
-    50% {
-        box-shadow: 0 0 30px rgba(29, 185, 84, 0.8), 0 0 60px rgba(29, 185, 84, 0.6);
-        transform: scale(1.005);
-    }
 }
 
 .gradio-container .audio-container:has(button[aria-label*="Stop"]) label {
-    color: var(--primary-green) !important;
-    font-weight: 700 !important;
-}
-
-.gradio-container .audio-container:has(button[aria-label*="Stop"])::before {
-    content: "● RECORDING" !important;
-    position: absolute !important;
-    top: -12px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    background: linear-gradient(135deg, var(--primary-green), var(--green-hover)) !important;
-    color: #000000 !important;
-    padding: 6px 16px !important;
-    border-radius: 4px !important;
-    font-weight: 700 !important;
-    font-size: 11px !important;
-    letter-spacing: 0.1em !important;
-    z-index: 10 !important;
-    box-shadow: 0 4px 12px rgba(29, 185, 84, 0.5) !important;
-    animation: pulse 1.5s ease-in-out infinite !important;
-}
-
-/* Loading state for generate button */
-.gradio-container button.generating {
-    background: repeating-linear-gradient(
-        45deg,
-        var(--primary-green),
-        var(--primary-green) 10px,
-        var(--green-hover) 10px,
-        var(--green-hover) 20px
-    ) !important;
-    background-size: 200% 200% !important;
-    animation: loadingStripes 2s linear infinite !important;
-}
-
-@keyframes loadingStripes {
-    0% { background-position: 0% 0%; }
-    100% { background-position: 100% 100%; }
+    color: var(--accent-orange) !important;
+    font-weight: 500 !important;
 }
 
 /* Hide Gradio footer */
@@ -1036,29 +976,6 @@ def create_ui():
 </style>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Page load stagger animation
-    const sidebarElements = document.querySelectorAll('.gradio-container > .row > .column:first-child > *');
-    sidebarElements.forEach((el, index) => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateX(-20px)';
-        setTimeout(() => {
-            el.style.transition = 'opacity 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
-            el.style.opacity = '1';
-            el.style.transform = 'translateX(0)';
-        }, index * 50);
-    });
-
-    const mainElements = document.querySelectorAll('.gradio-container > .row > .column:last-child > *');
-    mainElements.forEach((el, index) => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateX(20px)';
-        setTimeout(() => {
-            el.style.transition = 'opacity 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)';
-            el.style.opacity = '1';
-            el.style.transform = 'translateX(0)';
-        }, 200 + (index * 50));
-    });
-
     // Space bar to start/stop recording (when audio component focused)
     document.addEventListener('keydown', function(e) {
         if (e.code === 'Space' && e.target.closest('.audio-container')) {
@@ -1078,6 +995,15 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<style>
+/* Hide non-functional share button in audio output */
+.audio-container button[aria-label*="share" i],
+.audio-container button[title*="share" i],
+audio ~ div button:nth-child(2) {
+    display: none !important;
+}
+</style>
 """
 
     with gr.Blocks(title="Voice Cloning with Qwen3-TTS") as app:
@@ -1136,23 +1062,32 @@ document.addEventListener('DOMContentLoaded', function() {
                     )
 
                     gr.Markdown("**Record your voice reading the script:**")
-                    new_voice_script = gr.Textbox(
-                        value=get_default_script(),
-                        label="Reference Script (editable)",
-                        lines=4,
-                        interactive=True
-                    )
 
                     with gr.Row():
-                        new_voice_mic_check_btn = gr.Button("Check Microphone", size="sm")
-                        new_voice_mic_status = gr.Markdown("")
+                        with gr.Column(scale=2):
+                            new_voice_script = gr.Textbox(
+                                value=get_default_script(),
+                                label="Reference Script (editable)",
+                                lines=4,
+                                interactive=True
+                            )
 
-                    new_voice_audio = gr.Audio(
-                        sources=["microphone"],
-                        type="numpy",
-                        label="Record Voice (press Space when focused)"
-                    )
-                    new_voice_feedback = gr.Markdown("")
+                            new_voice_audio = gr.Audio(
+                                sources=["microphone"],
+                                type="numpy",
+                                label="Record Voice (press Space when focused)"
+                            )
+                            new_voice_feedback = gr.Markdown("")
+
+                        with gr.Column(scale=1, elem_classes=["recording-tips-panel"]):
+                            gr.Markdown("### Recording Tips")
+                            gr.Markdown("""
+                            - Speak naturally at normal pace
+                            - Keep consistent distance from mic
+                            - Record at least 10 seconds
+                            - Avoid background noise
+                            - Don't clip (peak < 0.95)
+                            """)
 
                     with gr.Row():
                         cancel_new_btn = gr.Button("Cancel", size="sm")
@@ -1166,26 +1101,35 @@ document.addEventListener('DOMContentLoaded', function() {
                     # Re-record Voice
                     gr.Markdown("**Re-record Selected Voice**")
                     rerecord_voice_name = gr.Markdown("*Select a saved voice first*")
-                    rerecord_script = gr.Textbox(
-                        value=get_default_script(),
-                        label="Reference Script (editable)",
-                        lines=4,
-                        interactive=True
-                    )
 
                     with gr.Row():
-                        rerecord_mic_check_btn = gr.Button("Check Microphone", size="sm")
-                        rerecord_mic_status = gr.Markdown("")
+                        with gr.Column(scale=2):
+                            rerecord_script = gr.Textbox(
+                                value=get_default_script(),
+                                label="Reference Script (editable)",
+                                lines=4,
+                                interactive=True
+                            )
 
-                    rerecord_audio = gr.Audio(
-                        sources=["microphone"],
-                        type="numpy",
-                        label="Record New Voice (press Space when focused)"
-                    )
-                    rerecord_feedback = gr.Markdown("")
+                            rerecord_audio = gr.Audio(
+                                sources=["microphone"],
+                                type="numpy",
+                                label="Record New Voice (press Space when focused)"
+                            )
+                            rerecord_feedback = gr.Markdown("")
 
-                    rerecord_btn = gr.Button("Update Voice", variant="primary", interactive=False)
-                    rerecord_status = gr.Markdown("")
+                            rerecord_btn = gr.Button("Update Voice", variant="primary", interactive=False)
+                            rerecord_status = gr.Markdown("")
+
+                        with gr.Column(scale=1, elem_classes=["recording-tips-panel"]):
+                            gr.Markdown("### Recording Tips")
+                            gr.Markdown("""
+                            - Speak naturally at normal pace
+                            - Keep consistent distance from mic
+                            - Record at least 10 seconds
+                            - Avoid background noise
+                            - Don't clip (peak < 0.95)
+                            """)
 
                     gr.Markdown("---")
 
@@ -1239,22 +1183,11 @@ document.addEventListener('DOMContentLoaded', function() {
             # Main Area - Voice Generation
             # ================================================================
             with gr.Column(scale=3):
-                # Waveform header placeholder (future: animated canvas)
-                gr.HTML("""
-<div style="height: 80px; margin-bottom: 24px; background: linear-gradient(90deg, #0D7A3A 0%, #1DB954 50%, #1ED760 100%); opacity: 0.3; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #B3B3B3; letter-spacing: 2px;">
-WAVEFORM VISUALIZATION (PLACEHOLDER)
-</div>
-""")
                 gr.Markdown("# Voice Cloning Studio")
-                gr.Markdown('<p style="color: var(--text-secondary); font-size: 16px; margin-top: -16px;">Professional voice cloning on Apple Silicon with MLX</p>')
-
-                # Show current voice info
-                voice_info = gr.Markdown("**Active Voice:** Quick Test (record new voice)")
+                gr.Markdown("Professional voice cloning on Apple Silicon with MLX")
 
                 # Recording Studio section (only for Quick Test mode)
                 with gr.Column(visible=True) as recording_section:
-                    gr.Markdown("## Recording Studio")
-                    gr.Markdown("Record a voice sample to clone")
 
                     with gr.Row():
                         with gr.Column(scale=2):
@@ -1279,10 +1212,6 @@ WAVEFORM VISUALIZATION (PLACEHOLDER)
 
                     gr.Markdown("### Record Your Voice")
 
-                    with gr.Row():
-                        guest_mic_check_btn = gr.Button("Check Microphone", size="sm")
-                        guest_mic_status = gr.Markdown("")
-
                     audio_input = gr.Audio(
                         sources=["microphone"],
                         type="numpy",
@@ -1290,33 +1219,23 @@ WAVEFORM VISUALIZATION (PLACEHOLDER)
                     )
                     audio_input_feedback = gr.Markdown("")
 
+                # Voice info - Hidden (kept for compatibility with event handlers)
+                voice_info = gr.Markdown(visible=False)
+
                 # Voice mode message (when using saved voice)
                 voice_mode_info = gr.Markdown(
                     visible=False
                 )
 
                 # Generation Studio section (always visible)
-                gr.Markdown("## Generation Studio")
-                gr.Markdown("Generate speech in your cloned voice")
 
-                with gr.Row():
-                    with gr.Column(scale=3):
-                        text_input = gr.Textbox(
-                            label="Text to Speak",
-                            placeholder="Enter any text to generate in your cloned voice...",
-                            lines=4
-                        )
-
-                    with gr.Column(scale=1):
-                        gr.Markdown("### Generation Tips")
-                        gr.Markdown("""
-                        - Natural punctuation helps
-                        - Shorter phrases = better quality
-                        - Language must match text
-                        """)
+                text_input = gr.Textbox(
+                    label="Text to Speak",
+                    placeholder="Enter any text to generate in your cloned voice...",
+                    lines=4
+                )
 
                 generate_btn = gr.Button("Generate Voice (⌘+Enter)", variant="primary", size="lg", scale=2, elem_id="generate-button")
-                gr.Markdown("*Generation typically takes 5-15 seconds depending on text length and model.*")
 
                 # Output Section
                 gr.Markdown("### Output")
@@ -1331,22 +1250,6 @@ WAVEFORM VISUALIZATION (PLACEHOLDER)
         # ====================================================================
         # Event Handlers
         # ====================================================================
-
-        # Wire up microphone check buttons
-        new_voice_mic_check_btn.click(
-            fn=check_microphone_status,
-            outputs=[new_voice_mic_status]
-        )
-
-        rerecord_mic_check_btn.click(
-            fn=check_microphone_status,
-            outputs=[rerecord_mic_status]
-        )
-
-        guest_mic_check_btn.click(
-            fn=check_microphone_status,
-            outputs=[guest_mic_status]
-        )
 
         def toggle_new_voice():
             """Show new voice section, hide manage section."""
